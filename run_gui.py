@@ -1,10 +1,15 @@
+import sys
+import os
 import argparse
 import dotenv
-import os
+
+# Looks very bad, but it allows run script from shell
+sys.path.append('gui')
 
 from gui.constants import WIN_WIDTH, WIN_HEIGHT
 from gui.client import Client
 from gui.gomoku_gui import GomokuGui
+
 
 if __name__ == '__main__':
     dotenv.load_dotenv()
