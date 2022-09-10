@@ -1,0 +1,9 @@
+{
+  "title": "start",
+  "message": {
+    "mode": "PvE",
+    "difficult": "EASY",
+    "board_size": 19,
+    "player_color": "BLACK"
+  }
+}

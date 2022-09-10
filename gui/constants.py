@@ -1,0 +1,41 @@
+from sys import platform
+
+BOARD_SIZE = 19
+
+LETTERS = 'abcdefghijklmnopqrstuvwxyz'
+
+LENGTH_WIN_SEQUENCE = 5
+
+if platform == 'darwin':
+    WIN_HEIGHT = 800
+    WIN_WIDTH = 1200
+    PAD_FROM_WIN = 35
+
+    FONT = "Arial"
+    BUTTON_FONT_SIZE = 15
+    LABEL_FONT_SIZE = 20
+    COPYRIGHT_FONT_SIZE = 10
+
+    OPTION_MENU_WIDTH = 8
+    OPTION_MENU_HEIGHT = 1
+    BUTTON_FONT = [FONT, BUTTON_FONT_SIZE]
+    LABEL_FONT = [FONT, LABEL_FONT_SIZE]
+elif platform == "linux":
+    WIN_HEIGHT = 800
+    WIN_WIDTH = 1200
+    PAD_FROM_WIN = 35
+
+    FONT = "Bitstream Charter" # "DejaVu Sans Mono"
+    BUTTON_FONT_SIZE = 15
+    LABEL_FONT_SIZE = 20
+    COPYRIGHT_FONT_SIZE = 10
+
+    OPTION_MENU_WIDTH = 8
+    OPTION_MENU_HEIGHT = 1
+    BUTTON_FONT = [FONT, BUTTON_FONT_SIZE]
+    LABEL_FONT = [FONT, LABEL_FONT_SIZE]
+
+BACKGROUND_COLOR = "#e2d891"
+BUTTON_COLOR = "#cfc685"
+HIGHLIGHT_COLOR = "#cfc6ff"
+BOARD_COLOR = "#bcb582"

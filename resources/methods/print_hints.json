@@ -1,0 +1,6 @@
+{
+  "method": "print_hints",
+  "arguments": {
+    "hints": ["a1", "b2"]
+  }
+}
