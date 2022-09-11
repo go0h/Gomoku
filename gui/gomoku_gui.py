@@ -156,7 +156,7 @@ class GomokuGui:
 
         self._board = BoardGui(self._root, config, self._send_message_from_board())
         self._board.print_board()
-        self.send_message(method="start", arguments=self._config.__dict__)
+        self.send_message(method="start_game", arguments=self._config.__dict__)
 
         back = ttk.Button(self._root, text="Back",
                           font=BUTTON_FONT,

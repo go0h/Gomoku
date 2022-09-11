@@ -1,7 +1,9 @@
 
 #include "GomokuGuiConnection.hpp"
 
+#include <nlohmann/json.hpp>
 
+using json = nlohmann::json;
 using namespace boost::asio;
 
 void GomokuGuiConnection::start() {
@@ -9,10 +11,10 @@ void GomokuGuiConnection::start() {
 }
 
 void GomokuGuiConnection::_async_read() {
-  _socket.async_receive(boost::asio::buffer(_data, 4096),
+  _socket.async_receive(buffer(_data, 4096),
                         boost::bind(&GomokuGuiConnection::_handle_read, this,
-                        boost::asio::placeholders::error,
-                        boost::asio::placeholders::bytes_transferred));
+                                    placeholders::error,
+                                    placeholders::bytes_transferred));
 }
 
 void GomokuGuiConnection::_handle_read(const boost::system::error_code& error, std::size_t len) {
@@ -25,11 +27,22 @@ void GomokuGuiConnection::_handle_read(const boost::system::error_code& error, s
         &_socket << " (" << len << ") bytes: " << _data << RESET;
     #endif
 
-    // std::string message = "hello from server\n";
-    // boost::asio::async_write(_socket, boost::asio::buffer(message),
-    //                         boost::bind(&GomokuGuiConnection::_handle_write, this,
-    //                                     boost::asio::placeholders::error,
-    //                                     boost::asio::placeholders::bytes_transferred));
+    auto json_data = json::parse(_data);
+
+    std::string method = json_data["method"];
+    auto arguments = json_data["arguments"];
+
+    if (method == "start_game") {
+      _game = Gomoku(arguments["mode"],
+                     arguments["player_color"],
+                     arguments["difficult"],
+                     arguments["board_size"]);
+    } else {
+
+      std::string response = _game.exec_method(method, arguments);
+
+      _async_write(response);
+    }
   }
 
   else {
@@ -37,13 +50,21 @@ void GomokuGuiConnection::_handle_read(const boost::system::error_code& error, s
       std::cerr << RED << "Recieve error: " << error.message()  << RESET << std::endl;
     #endif
 
-    if (error == boost::asio::error::eof) {
+    if (error == error::eof) {
       _socket.close();
       return;
     }
   }
 
   _async_read();
+}
+
+void GomokuGuiConnection::_async_write(std::string message) {
+
+  async_write(_socket, buffer(message),
+              boost::bind(&GomokuGuiConnection::_handle_write, this,
+                          placeholders::error,
+                          placeholders::bytes_transferred));
 }
 
 void GomokuGuiConnection::_handle_write(const boost::system::error_code& error, std::size_t len) {

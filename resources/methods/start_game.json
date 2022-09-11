@@ -1,6 +1,6 @@
 {
-  "title": "start",
-  "message": {
+  "method": "start_game",
+  "arguments": {
     "mode": "PvE",
     "difficult": "EASY",
     "board_size": 19,

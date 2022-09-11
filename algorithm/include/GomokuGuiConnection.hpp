@@ -2,19 +2,21 @@
 # define TCP_CONNECTION_HPP_
 
 # include "utils.hpp"
+# include "Gomoku.hpp"
 
-using namespace boost::asio;
 
 class GomokuGuiConnection : public boost::enable_shared_from_this<GomokuGuiConnection>
 {
+
  public:
+
   typedef boost::shared_ptr<GomokuGuiConnection> pointer;
 
   static pointer create(boost::asio::io_service& io_service) {
     return pointer(new GomokuGuiConnection(io_service));
   }
 
-  ip::tcp::socket& socket() {  return _socket; }
+  boost::asio::ip::tcp::socket& socket() {  return _socket; }
 
   void start();
 
@@ -26,10 +28,15 @@ class GomokuGuiConnection : public boost::enable_shared_from_this<GomokuGuiConne
 
   void _async_read();
   void _handle_read(const boost::system::error_code& error, std::size_t len);
+
+  void _async_write(std::string message);
   void _handle_write(const boost::system::error_code& error, std::size_t len);
 
-  ip::tcp::socket _socket;
-  char            _data[4096];
+
+  boost::asio::ip::tcp::socket _socket;
+  char                         _data[4096];
+  Gomoku                       _game;
+
 };
 
 #endif // TCP_CONNECTION_HPP_
