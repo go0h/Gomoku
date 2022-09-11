@@ -2,12 +2,8 @@
 #ifndef SERVER_HPP_
 # define SERVER_HPP_
 
-# include <iostream>
-# include <sstream>
-# include <string>
-# include <boost/asio.hpp>
-# include <boost/thread.hpp>
-# include <boost/bind.hpp>
+# include "GomokuGuiConnection.hpp"
+
 
 typedef boost::shared_ptr<boost::asio::ip::tcp::socket> socket_ptr;
 
@@ -20,6 +16,9 @@ public:
   ~Server();
 
   void run();
+
+  void handle_accept(GomokuGuiConnection::pointer new_connection,
+                     const boost::system::error_code& error);
 
 private:
 

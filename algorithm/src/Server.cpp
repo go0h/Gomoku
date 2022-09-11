@@ -1,25 +1,8 @@
-#include <Server.hpp>
+#include "Server.hpp"
+#include "GomokuGuiConnection.hpp"
 
 using namespace boost::asio;
 
-
-void handle_accept(socket_ptr sock, const boost::system::error_code& err)
-{
-    if (err)
-      return;
-    try {
-      while (true) {
-        char data[512];
-        size_t len = sock->receive(buffer(data));
-        data[len] = '\0';
-        std::cout << "receive from " << sock << " " << data;
-        if (len > 0)
-          sock->write_some(buffer("ok\n", 3));
-      }
-    } catch (boost::exception& e) {
-      std::cerr << "ERROR" << std::endl;
-    }
-}
 
 Server::Server(const int port) :
   _endpoint(ip::tcp::endpoint(ip::tcp::v4(), port)),
@@ -33,6 +16,20 @@ Server::~Server() {
 }
 
 void Server::run() {
-  _acceptor.async_accept(*_socket, boost::bind(handle_accept, _socket, _1));
+
+  GomokuGuiConnection::pointer new_gui_conn = GomokuGuiConnection::create(_service);
+
+  _acceptor.async_accept(new_gui_conn->socket(),
+                         boost::bind(&Server::handle_accept, this, new_gui_conn,
+                                     boost::asio::placeholders::error));
+
   _service.run();
+}
+
+void Server::handle_accept(GomokuGuiConnection::pointer new_connection,
+                           const boost::system::error_code& error) {
+  if (!error) {
+    new_connection->start();
+  }
+  run();
 }

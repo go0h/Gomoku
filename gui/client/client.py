@@ -43,7 +43,7 @@ class Client:
         self.connection.connect((socket.gethostbyname(self._host), self._port))
 
     def send_data(self, message: str) -> None:
-        self.connection.send(message.encode(self._client_encoding))
+        self.connection.send((message + "\n").encode(self._client_encoding))
         print(f'Client send:\n {json.loads(message)}')
 
     def receive_response(self) -> str:
