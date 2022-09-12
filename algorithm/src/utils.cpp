@@ -10,8 +10,7 @@ std::vector<std::string> MOVES = std::vector<std::string>();
 void fill_moves(unsigned board_size) {
   for (unsigned r = 0; r < board_size; ++r) {
     for (unsigned c = 0; c < board_size; ++c) {
-        MOVES.push_back(std::string(1, (char)(97 + c)) + std::string(1, (char)(49 + (r % 9))));
-        std::cout << std::string(1, (char)(97 + c)) + std::string(1, (char)(49 + (r % 9))) << std::endl;
+      MOVES.push_back(std::string(1, (char)(97 + c)) + std::string(1, (char)(49 + (r % 9))));
     }
   }
   auto rng = std::default_random_engine {};
