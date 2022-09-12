@@ -1,7 +1,9 @@
 
 #include <iostream>
-#include "Gomoku.hpp"
+
 #include "utils.hpp"
+#include "Gomoku.hpp"
+#include "Arguments.hpp"
 
 using json = nlohmann::json;
 

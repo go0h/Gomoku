@@ -5,6 +5,7 @@
 
 #include <string>
 #include <nlohmann/json.hpp>
+#include "Arguments.hpp"
 
 class Gomoku
 {
@@ -34,19 +35,17 @@ public:
 
   std::string exec_method(std::string& method, nlohmann::json& arguments);
 
+  std::string exec_method(Arguments& arguments);
+
   void print_config();
 
 private:
 
-  typedef std::string (*method)(nlohmann::json&);
-
-
-  std::string _back(nlohmann::json& arguments);
-  std::string _end_game(nlohmann::json& arguments);
-  std::string _make_turn(nlohmann::json& arguments);
-  std::string _print_hints(nlohmann::json& arguments);
-  std::string _winner(nlohmann::json& arguments);
-
+  Arguments* _back(Arguments& args);
+  Arguments* _end_game(Arguments& args);
+  Arguments* _make_turn(Arguments& args);
+  Arguments* _print_hints(Arguments& args);
+  Arguments* _winner(Arguments& args);
 
   t_gomoku_mode _mode;
   t_color       _color;

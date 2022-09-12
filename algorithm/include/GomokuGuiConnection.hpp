@@ -5,12 +5,12 @@
 # include "Gomoku.hpp"
 
 
-class GomokuGuiConnection : public boost::enable_shared_from_this<GomokuGuiConnection>
+class GomokuGuiConnection : public std::enable_shared_from_this<GomokuGuiConnection>
 {
 
  public:
 
-  typedef boost::shared_ptr<GomokuGuiConnection> pointer;
+  using pointer = std::shared_ptr<GomokuGuiConnection>;
 
   static pointer create(boost::asio::io_service& io_service) {
     return pointer(new GomokuGuiConnection(io_service));

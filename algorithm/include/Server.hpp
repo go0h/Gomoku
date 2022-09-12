@@ -5,7 +5,7 @@
 # include "GomokuGuiConnection.hpp"
 
 
-typedef boost::shared_ptr<boost::asio::ip::tcp::socket> socket_ptr;
+using socket_ptr = std::shared_ptr<boost::asio::ip::tcp::socket>;
 
 
 class Server {

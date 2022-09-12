@@ -1,14 +1,17 @@
 
-#include "GomokuGuiConnection.hpp"
-
 #include <nlohmann/json.hpp>
+#include "GomokuGuiConnection.hpp"
+#include "Arguments.hpp"
+
 
 using json = nlohmann::json;
 using namespace boost::asio;
 
+
 void GomokuGuiConnection::start() {
   _async_read();
 }
+
 
 void GomokuGuiConnection::_async_read() {
   _socket.async_receive(buffer(_data, 4096),
@@ -16,6 +19,7 @@ void GomokuGuiConnection::_async_read() {
                                     placeholders::error,
                                     placeholders::bytes_transferred));
 }
+
 
 void GomokuGuiConnection::_handle_read(const boost::system::error_code& error, std::size_t len) {
 
@@ -39,7 +43,9 @@ void GomokuGuiConnection::_handle_read(const boost::system::error_code& error, s
                      arguments["board_size"]);
     } else {
 
-      std::string response = _game.exec_method(method, arguments);
+      Arguments::pointer args = ArgumentFactory::createArgPtr(json_data);
+
+      std::string response = args->to_json_string();
 
       _async_write(response);
     }
@@ -59,6 +65,7 @@ void GomokuGuiConnection::_handle_read(const boost::system::error_code& error, s
   _async_read();
 }
 
+
 void GomokuGuiConnection::_async_write(std::string message) {
 
   async_write(_socket, buffer(message),
@@ -66,6 +73,7 @@ void GomokuGuiConnection::_async_write(std::string message) {
                           placeholders::error,
                           placeholders::bytes_transferred));
 }
+
 
 void GomokuGuiConnection::_handle_write(const boost::system::error_code& error, std::size_t len) {
   if (error) {
