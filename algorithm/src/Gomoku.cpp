@@ -3,7 +3,7 @@
 
 #include "utils.hpp"
 #include "Gomoku.hpp"
-#include "Arguments.hpp"
+
 
 using json = nlohmann::json;
 
@@ -27,54 +27,57 @@ Gomoku::Gomoku(std::string mode, std::string color, std::string difficult, unsig
 }
 
 
-std::string Gomoku::exec_method(Arguments::pointer args) {
+std::string Gomoku::exec_method(GomokuMethod::pointer gm) {
 
-  method met = _commands[args->getName()];
-  std::string result = ((this->*(met))(args))->to_json_string();
+  method met = _commands[gm->name];
+  MethodArgs::pointer arguments = ((this->*(met))(gm->arguments));
 
   if (_mode == PvE)
     _swith_color();
 
-  return result;
+  GomokuMethod res = { gm->name, arguments };
+  return res.as_json().dump();
 }
 
 
-Arguments::pointer Gomoku::_back(Arguments::pointer args) {
-  args.reset(new EmptyArg());
+MethodArgs::pointer Gomoku::_back(MethodArgs::pointer args) {
+  // args.reset(new EmptyArg());
   return args;
 }
 
 
-Arguments::pointer Gomoku::_winner(Arguments::pointer args) {
-  args.reset(new EmptyArg());
+MethodArgs::pointer Gomoku::_winner(MethodArgs::pointer args) {
+  // args.reset(new EmptyArg());
   return args;
 }
 
 
-Arguments::pointer Gomoku::_end_game(Arguments::pointer args) {
+MethodArgs::pointer Gomoku::_end_game(MethodArgs::pointer args) {
   return args;
 }
 
 #include "utils.hpp"
 
 //TODO
-Arguments::pointer Gomoku::_make_turn(Arguments::pointer args) {
+MethodArgs::pointer Gomoku::_make_turn(MethodArgs::pointer args) {
 
   MakeTurn* turn = dynamic_cast<MakeTurn*>(args.get());
 
-  remove_move(turn->getPosition());
-  std::string position = get_and_remove_random_move();
-  std::string color = _colors[_color];
-  std::vector<std::string> hints = std::vector<std::string>();
-  hints.push_back(get_random_move());
+  remove_move(turn->position);
 
-  return Arguments::pointer(new MakeTurn(
-    color, position, std::vector<std::string>(), hints)
-  );
+  MakeTurn* mt = new MakeTurn();
+  mt->position = get_and_remove_random_move();
+  mt->color = _colors[_color];
+  mt->hints = std::vector<std::string>();
+  mt->hints.push_back(get_random_move());
+  mt->captures = std::vector<std::string>();
+
+  return MethodArgs::pointer(mt);
+  return args;
 }
 
 
 //TODO
-Arguments::pointer Gomoku::_print_hints(Arguments::pointer args) {
+MethodArgs::pointer Gomoku::_print_hints(MethodArgs::pointer args) {
   return args;
 }

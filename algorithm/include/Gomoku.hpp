@@ -6,7 +6,8 @@
 #include <string>
 #include <map>
 #include <nlohmann/json.hpp>
-#include "Arguments.hpp"
+#include "gomoku_methods.hpp"
+
 
 class Gomoku
 {
@@ -28,14 +29,14 @@ public:
     HARD
   }            t_difficult;
 
-  typedef Arguments::pointer (Gomoku::*method)(Arguments::pointer);
+  typedef MethodArgs::pointer (Gomoku::*method)(MethodArgs::pointer);
 
 
   Gomoku() {};
   Gomoku(std::string mode, std::string color, std::string difficult, unsigned board_size);
   ~Gomoku() {};
 
-  std::string exec_method(Arguments::pointer args);
+  std::string exec_method(GomokuMethod::pointer gm);
 
 
 private:
@@ -44,11 +45,11 @@ private:
 
   void _swith_color() { _color = (_color == WHITE ? BLACK : WHITE); }
 
-  Arguments::pointer _back(Arguments::pointer args);
-  Arguments::pointer _end_game(Arguments::pointer args);
-  Arguments::pointer _make_turn(Arguments::pointer args);
-  Arguments::pointer _print_hints(Arguments::pointer args);
-  Arguments::pointer _winner(Arguments::pointer args);
+  MethodArgs::pointer _back(MethodArgs::pointer args);
+  MethodArgs::pointer _end_game(MethodArgs::pointer args);
+  MethodArgs::pointer _make_turn(MethodArgs::pointer args);
+  MethodArgs::pointer _print_hints(MethodArgs::pointer args);
+  MethodArgs::pointer _winner(MethodArgs::pointer args);
 
   t_gomoku_mode                 _mode;
   t_color                       _color;

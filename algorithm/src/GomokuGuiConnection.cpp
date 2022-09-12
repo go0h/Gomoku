@@ -1,7 +1,7 @@
 
 #include <nlohmann/json.hpp>
 #include "GomokuGuiConnection.hpp"
-#include "Arguments.hpp"
+#include "gomoku_methods.hpp"
 
 
 using json = nlohmann::json;
@@ -43,10 +43,11 @@ void GomokuGuiConnection::_handle_read(const boost::system::error_code& error, s
                      arguments["board_size"]);
     } else {
 
-      Arguments::pointer args = ArgumentFactory::createArgPtr(json_data);
 
-      std::string response = _game.exec_method(args);
-      std::cout << "Responce: " << GREEN << response << RESET << std::endl;
+      GomokuMethod::pointer gm = ArgumentFactory::createArguments(method, arguments);
+
+      std::string response = _game.exec_method(gm);
+      std::cout << "Response: " << GREEN << response << RESET << std::endl;
 
       if (response.length())
         _async_write(response);
