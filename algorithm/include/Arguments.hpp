@@ -16,6 +16,7 @@ public:
 
   virtual ~Arguments() = default;
 
+  virtual std::string&    getName();
   virtual nlohmann::json  to_json();
   std::string             to_json_string();
 
@@ -25,92 +26,119 @@ protected:
 };
 
 
-class ArgumentFactory {
+class EmptyArg : public Arguments
+{
+
+public:
+
+  EmptyArg() {};
+  ~EmptyArg() {};
+
+  nlohmann::json  to_json() { return json::object(); };
+  std::string     to_json_string() { return ""; };
+};
+
+
+class EndGame : public Arguments
+{
+
+public:
+
+  EndGame();
+  EndGame(nlohmann::json& arguments);
+  ~EndGame() {};
+};
+
+
+class Back : public Arguments
+{
+
+public:
+
+  Back();
+  Back(nlohmann::json& arguments);
+  ~Back() {};
+
+  std::string& getColor() { return _color; };
+  std::string& getPosition() { return _position; };
+  std::vector<std::string>& getCaptured() { return _captured; };
+
+  nlohmann::json  to_json();
 
 private:
 
-  class EndGame : public Arguments
-  {
-
-  public:
-
-    EndGame();
-    EndGame(nlohmann::json& arguments);
-    ~EndGame() {};
-  };
+  std::string               _color;
+  std::string               _position;
+  std::vector<std::string>  _captured;
+};
 
 
-  class Back : public Arguments
-  {
+class MakeTurn : public Arguments
+{
 
-  public:
+public:
 
-    Back();
-    Back(nlohmann::json& arguments);
-    ~Back() {};
+  MakeTurn();
+  MakeTurn(nlohmann::json& arguments);
+  MakeTurn(std::string color,
+           std::string position,
+           std::vector<std::string> captured,
+           std::vector<std::string> hints);
+  ~MakeTurn() {};
 
-    nlohmann::json  to_json();
+  std::string& getColor() { return _color; };
+  std::string& getPosition() { return _position; };
+  std::vector<std::string>& getCaptured() { return _captured; };
+  std::vector<std::string>& getHints() { return _hints; };
 
-  private:
+  nlohmann::json  to_json();
 
-    std::string               _color;
-    std::string               _position;
-    std::vector<std::string>  _captured;
-  };
+private:
 
-
-  class MakeTurn : public Arguments
-  {
-
-  public:
-
-    MakeTurn();
-    MakeTurn(nlohmann::json& arguments);
-    ~MakeTurn() {};
-
-    nlohmann::json  to_json();
-
-  private:
-
-    std::string               _color;
-    std::string               _position;
-    std::vector<std::string>  _captured;
-    std::vector<std::string>  _hints;
-  };
+  std::string               _color;
+  std::string               _position;
+  std::vector<std::string>  _captured;
+  std::vector<std::string>  _hints;
+};
 
 
-  class Hints : public Arguments
-  {
+class Hints : public Arguments
+{
 
-  public:
+public:
 
-    Hints();
-    Hints(nlohmann::json& arguments);
-    ~Hints() {};
+  Hints();
+  Hints(nlohmann::json& arguments);
+  ~Hints() {};
 
-    nlohmann::json  to_json();
+  std::vector<std::string>& getHints() { return _hints; };
+  nlohmann::json  to_json();
 
-  private:
+private:
 
-    std::vector<std::string>  _hints;
-  };
+  std::vector<std::string>  _hints;
+};
 
 
-  class Winner : public Arguments
-  {
+class Winner : public Arguments
+{
 
-  public:
+public:
 
-    Winner();
-    Winner(nlohmann::json& arguments);
-    ~Winner() {};
+  Winner();
+  Winner(nlohmann::json& arguments);
+  ~Winner() {};
 
-    nlohmann::json  to_json();
+  std::string& getWinner() { return _winner; };
+  nlohmann::json  to_json();
 
-  private:
+private:
 
-    std::string  _winner;
-  };
+  std::string  _winner;
+};
+
+
+class ArgumentFactory {
 
 public:
 

@@ -22,6 +22,9 @@ int main(int argc, char* argv[]) {
   try {
     validate_arguments(argc, argv);
 
+    // DEBUG
+    fill_moves(19);
+
     Server server = Server(atoi(argv[1]));
     server.run();
   }

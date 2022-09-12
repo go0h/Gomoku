@@ -4,6 +4,7 @@
 
 
 #include <string>
+#include <map>
 #include <nlohmann/json.hpp>
 #include "Arguments.hpp"
 
@@ -27,30 +28,42 @@ public:
     HARD
   }            t_difficult;
 
+  typedef Arguments::pointer (Gomoku::*method)(Arguments::pointer);
+
 
   Gomoku() {};
   Gomoku(std::string mode, std::string color, std::string difficult, unsigned board_size);
   ~Gomoku() {};
 
+  std::string exec_method(Arguments::pointer args);
 
-  std::string exec_method(std::string& method, nlohmann::json& arguments);
-
-  std::string exec_method(Arguments& arguments);
-
-  void print_config();
 
 private:
 
-  Arguments* _back(Arguments& args);
-  Arguments* _end_game(Arguments& args);
-  Arguments* _make_turn(Arguments& args);
-  Arguments* _print_hints(Arguments& args);
-  Arguments* _winner(Arguments& args);
+  void _print_config();
 
-  t_gomoku_mode _mode;
-  t_color       _color;
-  t_difficult   _difficult;
-  unsigned      _board_size;
+  void _swith_color() { _color = (_color == WHITE ? BLACK : WHITE); }
+
+  Arguments::pointer _back(Arguments::pointer args);
+  Arguments::pointer _end_game(Arguments::pointer args);
+  Arguments::pointer _make_turn(Arguments::pointer args);
+  Arguments::pointer _print_hints(Arguments::pointer args);
+  Arguments::pointer _winner(Arguments::pointer args);
+
+  t_gomoku_mode                 _mode;
+  t_color                       _color;
+  t_difficult                   _difficult;
+  unsigned                      _board_size;
+
+  std::map<std::string, method> _commands =
+  {
+    {"back",        &Gomoku::_back},
+    {"end_game",    &Gomoku::_end_game},
+    {"make_turn",   &Gomoku::_make_turn},
+    {"print_hints", &Gomoku::_print_hints},
+    {"winner",      &Gomoku::_winner}
+  };
+  std::vector<std::string> _colors = { "white", "black" };
 
 };
 

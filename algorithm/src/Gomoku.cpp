@@ -27,34 +27,54 @@ Gomoku::Gomoku(std::string mode, std::string color, std::string difficult, unsig
 }
 
 
-std::string Gomoku::exec_method(std::string& method, nlohmann::json& arguments) {
+std::string Gomoku::exec_method(Arguments::pointer args) {
 
-  std::cout << "Method: " << CYAN << method << RESET << std::endl;
-  std::cout << "With arguments:" << std::endl;
-  for (auto& [key, value] : arguments.items()) {
-    std::cout << CYAN << key << ":\t" << GREEN << value << RESET << std::endl;
-  }
+  method met = _commands[args->getName()];
+  std::string result = ((this->*(met))(args))->to_json_string();
 
+  if (_mode == PvE)
+    _swith_color();
 
-  json responce;
-  responce["method"] = method;
-  responce["arguments"] = json::object();
-
-  return responce.dump();
+  return result;
 }
 
-void Gomoku::print_config() {
 
-  std::cout << MAGENTA << "Gomoku game [" << this << "] with parameters:" << std::endl;
-  std::cout << GREEN << "Game mode:\t" << CYAN << (_mode == PvP ? "PvP" : "PvE") << std::endl;
-  std::cout << GREEN << "Player color:\t" << CYAN << (_color == WHITE ? "WHITE" : "BLACK") << std::endl;
+Arguments::pointer Gomoku::_back(Arguments::pointer args) {
+  args.reset(new EmptyArg());
+  return args;
+}
 
-  std::string difficult = "EASY";
-  if (_difficult == MEDIUM)
-    difficult = "MEDIUM";
-  else if (_difficult == HARD)
-    difficult = "HARD";
 
-  std::cout << GREEN << "Difficult:\t" << CYAN << difficult << std::endl;
-  std::cout << GREEN << "Board size:\t" << CYAN << _board_size << RESET << std::endl;
+Arguments::pointer Gomoku::_winner(Arguments::pointer args) {
+  args.reset(new EmptyArg());
+  return args;
+}
+
+
+Arguments::pointer Gomoku::_end_game(Arguments::pointer args) {
+  return args;
+}
+
+#include "utils.hpp"
+
+//TODO
+Arguments::pointer Gomoku::_make_turn(Arguments::pointer args) {
+
+  MakeTurn* turn = dynamic_cast<MakeTurn*>(args.get());
+
+  remove_move(turn->getPosition());
+  std::string position = get_and_remove_random_move();
+  std::string color = _colors[_color];
+  std::vector<std::string> hints = std::vector<std::string>();
+  hints.push_back(get_random_move());
+
+  return Arguments::pointer(new MakeTurn(
+    color, position, std::vector<std::string>(), hints)
+  );
+}
+
+
+//TODO
+Arguments::pointer Gomoku::_print_hints(Arguments::pointer args) {
+  return args;
 }

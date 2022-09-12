@@ -3,7 +3,11 @@
 #include <iostream>
 
 
-nlohmann::json  Arguments::to_json() {
+std::string& Arguments::getName() {
+  return _name;
+}
+
+nlohmann::json Arguments::to_json() {
 
   nlohmann::json obj;
   obj["method"] = _name;
@@ -12,26 +16,25 @@ nlohmann::json  Arguments::to_json() {
   return obj;
 }
 
-
 std::string Arguments::to_json_string() {
   return to_json().dump();
 };
 
 
-ArgumentFactory::EndGame::EndGame() {
+EndGame::EndGame() {
   _name = "end_game";
 };
 
-ArgumentFactory::EndGame::EndGame(nlohmann::json& arguments) {
+EndGame::EndGame(nlohmann::json& arguments) {
   _name = arguments["method"];
 };
 
 
-ArgumentFactory::Back::Back() {
+Back::Back() {
   _name = "back";
 };
 
-ArgumentFactory::Back::Back(nlohmann::json& arguments) {
+Back::Back(nlohmann::json& arguments) {
 
   _name = arguments["method"];
   _color = arguments["arguments"]["color"];
@@ -45,7 +48,7 @@ ArgumentFactory::Back::Back(nlohmann::json& arguments) {
 
 };
 
-nlohmann::json  ArgumentFactory::Back::to_json() {
+nlohmann::json  Back::to_json() {
 
   nlohmann::json obj = Arguments::to_json();
 
@@ -58,11 +61,11 @@ nlohmann::json  ArgumentFactory::Back::to_json() {
 };
 
 
-ArgumentFactory::MakeTurn::MakeTurn() {
+MakeTurn::MakeTurn() {
   _name = "make_turn";
 };
 
-ArgumentFactory::MakeTurn::MakeTurn(nlohmann::json& arguments) {
+MakeTurn::MakeTurn(nlohmann::json& arguments) {
 
   _name = arguments["method"];
   _color = arguments["arguments"]["color"];
@@ -83,7 +86,19 @@ ArgumentFactory::MakeTurn::MakeTurn(nlohmann::json& arguments) {
 
 };
 
-nlohmann::json  ArgumentFactory::MakeTurn::to_json() {
+MakeTurn::MakeTurn(std::string color,
+                   std::string position,
+                   std::vector<std::string> captured,
+                   std::vector<std::string> hints) :
+    _color(color),
+    _position(position),
+    _captured(captured),
+    _hints(hints) {
+
+  _name = "make_turn";
+};
+
+nlohmann::json  MakeTurn::to_json() {
 
   nlohmann::json obj = Arguments::to_json();
 
@@ -99,11 +114,11 @@ nlohmann::json  ArgumentFactory::MakeTurn::to_json() {
 };
 
 
-ArgumentFactory::Hints::Hints() {
+Hints::Hints() {
   _name = "print_hints";
 };
 
-ArgumentFactory::Hints::Hints(nlohmann::json& arguments) {
+Hints::Hints(nlohmann::json& arguments) {
 
   _name = arguments["method"];
   _hints = std::vector<std::string>();
@@ -115,7 +130,7 @@ ArgumentFactory::Hints::Hints(nlohmann::json& arguments) {
 
 };
 
-nlohmann::json  ArgumentFactory::Hints::to_json() {
+nlohmann::json  Hints::to_json() {
 
   nlohmann::json obj = Arguments::to_json();
 
@@ -128,16 +143,16 @@ nlohmann::json  ArgumentFactory::Hints::to_json() {
 };
 
 
-ArgumentFactory::Winner::Winner() {
+Winner::Winner() {
   _name = "winner";
 };
 
-ArgumentFactory::Winner::Winner(nlohmann::json& arguments) {
+Winner::Winner(nlohmann::json& arguments) {
   _name = arguments["method"];
   _winner = arguments["arguments"]["winner"];
 };
 
-nlohmann::json  ArgumentFactory::Winner::to_json() {
+nlohmann::json  Winner::to_json() {
 
   nlohmann::json obj = Arguments::to_json();
 

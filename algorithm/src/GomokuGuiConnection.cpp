@@ -45,9 +45,11 @@ void GomokuGuiConnection::_handle_read(const boost::system::error_code& error, s
 
       Arguments::pointer args = ArgumentFactory::createArgPtr(json_data);
 
-      std::string response = args->to_json_string();
+      std::string response = _game.exec_method(args);
+      std::cout << "Responce: " << GREEN << response << RESET << std::endl;
 
-      _async_write(response);
+      if (response.length())
+        _async_write(response);
     }
   }
 
