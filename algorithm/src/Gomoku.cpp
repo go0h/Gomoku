@@ -20,6 +20,7 @@ Gomoku::Gomoku(std::string mode, std::string color, std::string difficult, unsig
     _difficult = HARD;
 
   _board_size = board_size;
+  _board = Board(_board_size);
 
   #ifdef DEBUG
     _print_config();

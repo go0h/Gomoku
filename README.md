@@ -22,7 +22,7 @@ sudo apt-get install nlohmann-json3-dev
 
 ```bash
 brew install boost
-
+brew install nlohmann-json
 ```
 
 1. Разработка эвристик:

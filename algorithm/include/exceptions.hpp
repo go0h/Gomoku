@@ -2,8 +2,6 @@
 # define EXCEPTIONS_H_
 
 # include <exception>
-# include <cerrno>
-# include <cstring>
 
 
 struct InvalidArgument : public std::exception {

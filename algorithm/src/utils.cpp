@@ -10,10 +10,10 @@ std::vector<std::string> MOVES = std::vector<std::string>();
 void fill_moves(unsigned board_size) {
   for (unsigned r = 0; r < board_size; ++r) {
     for (unsigned c = 0; c < board_size; ++c) {
-      MOVES.push_back(std::string(1, (char)(97 + c)) + std::string(1, (char)(49 + (r % 9))));
+      MOVES.push_back(std::string(1, (char)(97 + c)) + std::to_string(r + 1));
     }
   }
-  auto rng = std::default_random_engine {};
+  auto rng = std::default_random_engine(time(0));
   std::shuffle(std::begin(MOVES), std::end(MOVES), rng);
 }
 

@@ -7,6 +7,7 @@
 using json = nlohmann::json;
 using namespace boost::asio;
 
+unsigned GomokuGuiConnection::_client_counter = 0;
 
 void GomokuGuiConnection::start() {
   _async_read();
@@ -24,42 +25,44 @@ void GomokuGuiConnection::_async_read() {
 void GomokuGuiConnection::_handle_read(const boost::system::error_code& error, std::size_t len) {
 
   if (!error) {
+
     _data[len] = '\0';
 
     #ifdef DEBUG
-      std::cout << GREEN << "Recieve from client " << \
-        &_socket << " (" << len << ") bytes: " << _data << RESET;
+      std::cerr << GREEN << "Recieve " << len << " bytes from Client_" << _id << std::endl;
+      std::cerr << BLUE << _data << RESET;
     #endif
 
-    auto json_data = json::parse(_data);
+    try {
 
-    std::string method = json_data["method"];
-    auto arguments = json_data["arguments"];
+      nlohmann::json json_data = json::parse(_data);
 
-    if (method == "start_game") {
-      _game = Gomoku(arguments["mode"],
-                     arguments["player_color"],
-                     arguments["difficult"],
-                     arguments["board_size"]);
-    } else {
+      std::string method = json_data["method"];
+      nlohmann::json args = json_data["arguments"];
 
-      GomokuMethod::pointer gm = ArgumentFactory::createArguments(method, arguments);
+      if (method == "start_game") {
+        _game = Gomoku(args["mode"], args["player_color"], args["difficult"], args["board_size"]);
+      } else {
 
-      std::string response = _game.exec_method(gm);
-      std::cout << "Response: " << GREEN << response << RESET << std::endl;
+        GomokuMethod::pointer gm = ArgumentFactory::createArguments(method, args);
 
-      if (response.length())
-        _async_write(response);
+        std::string response = _game.exec_method(gm);
+
+        if (response.length())
+          _async_write(response);
+      }
+    } catch (const std::exception& e) {
+      std::cerr << RED << "Get exception: " << e.what() << RESET << std::endl;
     }
-  }
+  } else {
 
-  else {
     #ifdef DEBUG
-      std::cerr << RED << "Recieve error: " << error.message()  << RESET << std::endl;
+      std::cerr << RED << "Recieve error from Client_" << _id << ": " \
+        << error.message()  << RESET << std::endl;
     #endif
 
     if (error == error::eof) {
-      _socket.close();
+      _close_connection();
       return;
     }
   }
@@ -70,6 +73,10 @@ void GomokuGuiConnection::_handle_read(const boost::system::error_code& error, s
 
 void GomokuGuiConnection::_async_write(std::string message) {
 
+  #ifdef DEBUG
+    std::cerr << YELLOW << "Send to Client_" << _id << ": " << message << RESET << std::endl;
+  #endif
+
   async_write(_socket, buffer(message),
               boost::bind(&GomokuGuiConnection::_handle_write, this,
                           placeholders::error,
@@ -79,10 +86,20 @@ void GomokuGuiConnection::_async_write(std::string message) {
 
 void GomokuGuiConnection::_handle_write(const boost::system::error_code& error, std::size_t len) {
   if (error) {
-    len *= 0;
+    std::cerr << RED << "Error send " << len << " bytes to Client_" << _id \
+      << ": " << error.message()  << RESET << std::endl;
   } else {
     #ifdef DEBUG
-      std::cout << "Send " << len << " bytes to " << &_socket << std::endl;
+      std::cerr << GREEN << "Send " << len << " bytes to Client_" << _id << RESET << std::endl;
     #endif
   }
+}
+
+void GomokuGuiConnection::_close_connection() {
+
+  #ifdef DEBUG
+    std::cerr << MAGENTA << "Close connection for Client_" << _id << RESET << std::endl;
+  #endif
+
+  _socket.close();
 }

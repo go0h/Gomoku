@@ -6,7 +6,9 @@
 #include <string>
 #include <map>
 #include <nlohmann/json.hpp>
+
 #include "gomoku_methods.hpp"
+#include "Board.hpp"
 
 
 class Gomoku
@@ -17,11 +19,6 @@ public:
     PvE,
     PvP
   }            t_gomoku_mode;
-
-  typedef enum s_color {
-    WHITE,
-    BLACK
-  }            t_color;
 
   typedef enum s_difficult {
     EASY,
@@ -54,6 +51,7 @@ private:
   t_gomoku_mode                 _mode;
   t_color                       _color;
   t_difficult                   _difficult;
+  Board                         _board;
   unsigned                      _board_size;
 
   std::map<std::string, method> _commands =
@@ -64,8 +62,7 @@ private:
     {"print_hints", &Gomoku::_print_hints},
     {"winner",      &Gomoku::_winner}
   };
-  std::vector<std::string> _colors = { "white", "black" };
-
+  std::vector<std::string> _colors = { "", "white", "black" };
 };
 
 #endif // GOMOKU_HPP_

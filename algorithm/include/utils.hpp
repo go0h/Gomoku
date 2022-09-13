@@ -7,9 +7,6 @@
 # include <iostream>
 # include <sstream>
 # include <string>
-# include <boost/asio.hpp>
-# include <boost/thread.hpp>
-# include <boost/bind.hpp>
 
 
 // colors for beauty
