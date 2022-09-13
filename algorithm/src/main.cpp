@@ -25,7 +25,8 @@ int main(int argc, char* argv[]) {
     // DEBUG
     fill_moves(19);
 
-    Server server = Server(atoi(argv[1]));
+    const int port = atoi(argv[1]);
+    Server server(port);
     server.run();
   }
   catch (const std::exception& e) {

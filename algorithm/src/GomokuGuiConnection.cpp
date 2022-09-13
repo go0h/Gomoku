@@ -43,7 +43,6 @@ void GomokuGuiConnection::_handle_read(const boost::system::error_code& error, s
                      arguments["board_size"]);
     } else {
 
-
       GomokuMethod::pointer gm = ArgumentFactory::createArguments(method, arguments);
 
       std::string response = _game.exec_method(gm);

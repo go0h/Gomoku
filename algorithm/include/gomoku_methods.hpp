@@ -10,6 +10,7 @@ using json = nlohmann::json;
 struct MethodArgs {
   using pointer = std::shared_ptr<MethodArgs>;
 
+  virtual ~MethodArgs() {};
   virtual nlohmann::json as_json() = 0;
 };
 
@@ -26,12 +27,14 @@ struct GomokuMethod
 
 
 struct EmptyArg : public MethodArgs {
+  virtual ~EmptyArg() {};
   virtual nlohmann::json as_json();
 };
 
 
 struct Back : public MethodArgs
 {
+  virtual ~Back() {};
   virtual nlohmann::json as_json();
 
   std::string               color;
@@ -42,6 +45,7 @@ struct Back : public MethodArgs
 
 struct MakeTurn : public MethodArgs
 {
+  virtual ~MakeTurn() {};
   virtual nlohmann::json as_json();
 
   std::string               color;
@@ -53,6 +57,7 @@ struct MakeTurn : public MethodArgs
 
 struct Hints : public MethodArgs
 {
+  virtual ~Hints() {};
   virtual nlohmann::json as_json();
 
   std::vector<std::string>  hints;
@@ -61,6 +66,7 @@ struct Hints : public MethodArgs
 
 struct Winner : public MethodArgs
 {
+  virtual ~Winner() {};
   virtual nlohmann::json as_json();
 
   std::string  winner;

@@ -2,6 +2,8 @@
 #ifndef UTILS_HPP_
 # define UTILS_HPP_
 
+# define BOOST_BIND_NO_PLACEHOLDERS
+
 # include <iostream>
 # include <sstream>
 # include <string>

@@ -1,6 +1,6 @@
 
 #ifndef GOMOKU_HPP_
-# define GOMOKU_HPP
+# define GOMOKU_HPP_
 
 
 #include <string>

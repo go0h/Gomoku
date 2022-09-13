@@ -21,7 +21,8 @@ sudo apt-get install nlohmann-json3-dev
 #### 2 MacOS
 
 ```bash
-TODO
+brew install boost
+
 ```
 
 1. Разработка эвристик:

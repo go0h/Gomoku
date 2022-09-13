@@ -26,10 +26,18 @@ SRCS				:= main.cpp Server.cpp GomokuGuiConnection.cpp Gomoku.cpp \
 
 OBJ					:= $(SRCS:.cpp=.o)
 
-CXX					:= g++
-CXXFLAGS		?= -Wall -Werror -Wextra -std=c++17
+CXX					= g++
+CXXFLAGS		?= -Wall -Werror -Wextra -std=c++14
 IFLAGS			:= -I$(INC_DIR)
 DEPEND			:= -MD -MT
+
+OS = $(shell uname)
+ifeq ($(OS), Darwin)
+  CXX = clang++
+  IFLAGS += -I${HOME}/homebrew/include
+else
+	LIBS = -lpthread -lboost_system
+endif
 
 ifeq ($(DEBUG), 1)
   CXXFLAGS += -D DEBUG
@@ -45,11 +53,11 @@ run:
 	python3 run_gui.py
 
 $(NAME): $(OBJ)
-	$(CXX) $(CXXFLAGS) $(IFLAGS) $(addprefix $(OBJ_DIR)/,$(OBJ)) -o $@ -lpthread -lboost_system
+	$(CXX) $(CXXFLAGS) $(IFLAGS) $(addprefix $(OBJ_DIR)/,$(OBJ)) -o $@ $(LIBS)
 	echo "$(GREEN)$@ was created ✅$(RESET)"
 
 $(OBJ):%.o:%.cpp | $(OBJ_DIR)
-	$(CXX) $(CXXFLAGS) $(IFLAGS) -o $(OBJ_DIR)/$@ -c $< $(DEPEND) $@ -lpthread -lboost_system
+	$(CXX) $(CXXFLAGS) $(IFLAGS) -o $(OBJ_DIR)/$@ -c $< $(DEPEND) $@ $(LIBS)
 	echo "$(GREEN)$@ was created$(RESET)"
 
 $(OBJ_DIR):
