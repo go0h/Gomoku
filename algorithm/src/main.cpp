@@ -22,9 +22,6 @@ int main(int argc, char* argv[]) {
   try {
     validate_arguments(argc, argv);
 
-    // DEBUG
-    fill_moves(19);
-
     const int port = atoi(argv[1]);
     Server server(port);
     server.run();
