@@ -2,17 +2,14 @@
 #ifndef GOMOKU_HPP_
 # define GOMOKU_HPP_
 
-
-#include <string>
-#include <map>
 #include <nlohmann/json.hpp>
-
 #include "gomoku_methods.hpp"
 #include "Board.hpp"
 
 
 class Gomoku
 {
+
 public:
 
   typedef enum s_gomoku_mode {
@@ -21,28 +18,27 @@ public:
   }            t_gomoku_mode;
 
   typedef enum s_difficult {
-    EASY,
-    MEDIUM,
-    HARD
+    EASY       = 2,
+    MEDIUM     = 7,
+    HARD       = 11
   }            t_difficult;
 
   typedef MethodArgs::pointer (Gomoku::*method)(MethodArgs::pointer);
 
 
-  Gomoku() {};
-  Gomoku(std::string mode, std::string color, std::string difficult, unsigned board_size);
+  Gomoku();
   ~Gomoku() {};
 
-  std::string exec_method(GomokuMethod::pointer gm);
+  std::string process(GomokuMethod::pointer gm);
 
 
 private:
 
   void _print_config();
-
   void _swith_color() { _color = (_color == WHITE ? BLACK : WHITE); }
 
   MethodArgs::pointer _back(MethodArgs::pointer args);
+  MethodArgs::pointer _start_game(MethodArgs::pointer args);
   MethodArgs::pointer _end_game(MethodArgs::pointer args);
   MethodArgs::pointer _make_turn(MethodArgs::pointer args);
   MethodArgs::pointer _print_hints(MethodArgs::pointer args);
@@ -57,12 +53,19 @@ private:
   std::map<std::string, method> _commands =
   {
     {"back",        &Gomoku::_back},
+    {"start_game",  &Gomoku::_start_game},
     {"end_game",    &Gomoku::_end_game},
     {"make_turn",   &Gomoku::_make_turn},
     {"print_hints", &Gomoku::_print_hints},
     {"winner",      &Gomoku::_winner}
   };
-  std::vector<std::string> _colors = { "", "white", "black" };
+  std::map<std::string, t_color> _str2color =
+  {
+    {"",        EMPTY},
+    {"white",   WHITE},
+    {"black",   BLACK}
+  };
+  std::vector<std::string> _color2str = { "", "white", "black" };
 };
 
 #endif // GOMOKU_HPP_

@@ -193,11 +193,13 @@ class GomokuGui:
             if method_name == "end_game":
                 self._client.connection.close()
                 break
+            elif method_name in ["winner", "back", "start_game"]:
+                print(f"Method '{method_name}' - OK")
             elif method_name in dir(self._board):
                 method = self._board.__getattribute__(method_name)
                 method(**arguments)
             else:
-                print(f"Unresolved method {method_name} with arguments {arguments}")
+                print(f"Unresolved method '{method_name}' with arguments: {arguments}")
 
     def send_message(self, method, arguments: dict):
         """Send player action to server """

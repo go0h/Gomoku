@@ -37,20 +37,15 @@ void GomokuGuiConnection::_handle_read(const boost::system::error_code& error, s
 
       nlohmann::json json_data = json::parse(_data);
 
-      std::string method = json_data["method"];
-      nlohmann::json args = json_data["arguments"];
+      GomokuMethod::pointer gm = ArgumentFactory::createArguments(
+        json_data["method"], json_data["arguments"]
+      );
 
-      if (method == "start_game") {
-        _game = Gomoku(args["mode"], args["player_color"], args["difficult"], args["board_size"]);
-      } else {
+      std::string response = _game.process(gm);
 
-        GomokuMethod::pointer gm = ArgumentFactory::createArguments(method, args);
+      if (response.length())
+        _async_write(response);
 
-        std::string response = _game.exec_method(gm);
-
-        if (response.length())
-          _async_write(response);
-      }
     } catch (const std::exception& e) {
       std::cerr << RED << "Get exception: " << e.what() << RESET << std::endl;
     }

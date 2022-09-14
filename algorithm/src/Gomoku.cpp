@@ -1,6 +1,4 @@
 
-#include <iostream>
-
 #include "utils.hpp"
 #include "Gomoku.hpp"
 #include "Minimax.hpp"
@@ -8,28 +6,15 @@
 
 using json = nlohmann::json;
 
-Gomoku::Gomoku(std::string mode, std::string color, std::string difficult, unsigned board_size) {
 
-  _mode = mode == "PvP" ? PvP : PvE;
-  _color = color == "WHITE" ? BLACK : WHITE;
-
-  if (difficult == "EASY")
-    _difficult = EASY;
-  else if (difficult == "MEDIUM")
-    _difficult = MEDIUM;
-  else
-    _difficult = HARD;
-
-  _board_size = board_size;
-  _board = Board(_board_size);
-
-  #ifdef DEBUG
-    _print_config();
-  #endif
-}
+Gomoku::Gomoku() :
+  _mode(PvE),
+  _color(WHITE),
+  _difficult(EASY),
+  _board_size(19) { }
 
 
-std::string Gomoku::exec_method(GomokuMethod::pointer gm) {
+std::string Gomoku::process(GomokuMethod::pointer gm) {
 
   method met = _commands[gm->name];
   MethodArgs::pointer arguments = ((this->*(met))(gm->arguments));
@@ -37,34 +22,59 @@ std::string Gomoku::exec_method(GomokuMethod::pointer gm) {
   if (_mode == PvP)
     _swith_color();
 
+  _board.printBoard();
+  std::cout << std::endl;
+
   GomokuMethod res = { gm->name, arguments };
+
   return res.as_json().dump();
 }
 
-//TODO
+
+MethodArgs::pointer Gomoku::_start_game(MethodArgs::pointer args) {
+
+  StartGame* st = dynamic_cast<StartGame*>(args.get());
+
+  _mode = st->mode == "PvP" ? PvP : PvE;
+  _color = st->player_color == "WHITE" ? BLACK : WHITE;
+  _difficult = EASY;
+
+  if (st->difficult == "MEDIUM")
+    _difficult = MEDIUM;
+  else if (st->difficult == "HARD")
+    _difficult = HARD;
+
+  _board_size = st->board_size;
+  _board = Board(_board_size);
+
+  #ifdef DEBUG
+    _print_config();
+  #endif
+
+  return args;
+}
+
+
 MethodArgs::pointer Gomoku::_back(MethodArgs::pointer args) {
 
   Back* back = dynamic_cast<Back*>(args.get());
 
-  t_color color = (back->color == "black") ? BLACK : WHITE;
-  t_color opposite_color = color == BLACK ? WHITE : BLACK;
-
+  t_color restore_color = _str2color[back->color] == BLACK ? WHITE : BLACK;
   _board(back->position) = EMPTY;
 
   for (std::string& capture : back->captures) {
-    _board(capture) = opposite_color;
+    _board(capture) = restore_color;
   }
 
   return args;
 }
 
-//TODO
+
 MethodArgs::pointer Gomoku::_winner(MethodArgs::pointer args) {
-  // args.reset(new EmptyArg());
   return args;
 }
 
-//TODO
+
 MethodArgs::pointer Gomoku::_end_game(MethodArgs::pointer args) {
   return args;
 }
@@ -76,23 +86,21 @@ MethodArgs::pointer Gomoku::_make_turn(MethodArgs::pointer args) {
 
   MakeTurn* turn = dynamic_cast<MakeTurn*>(args.get());
 
-  t_color color = (turn->color == "black") ? BLACK : WHITE;
-
-  _board(turn->position) = color;
+  _board(turn->position) = _str2color[turn->color];
 
   for (std::string& capture : turn->captures) {
     _board(capture) = EMPTY;
   }
 
-  Minimax minimax = Minimax(_board, _color, 2);
-  t_coord move = minimax.min_max(2);
+  Minimax minimax = Minimax(_board, _color, _difficult);
+  t_coord move = minimax.min_max(_difficult);
   _board(move) = _color;
 
   MakeTurn* mt = new MakeTurn();
 
   mt->position = _board.coord_to_pos(move);
 
-  mt->color = _colors[_color];
+  mt->color = _color2str[_color];
   mt->hints = std::vector<std::string>();
   mt->captures = std::vector<std::string>();
 

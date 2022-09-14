@@ -11,7 +11,7 @@ struct MethodArgs : public std::enable_shared_from_this<MethodArgs> {
   using pointer = std::shared_ptr<MethodArgs>;
 
   virtual ~MethodArgs() {};
-  virtual nlohmann::json as_json() = 0;
+  virtual json as_json() = 0;
 };
 
 
@@ -22,20 +22,32 @@ struct GomokuMethod
   std::string           name;
   MethodArgs::pointer   arguments;
 
-  nlohmann::json as_json();
+  json as_json();
 };
 
 
 struct EmptyArg : public MethodArgs {
   virtual ~EmptyArg() {};
-  virtual nlohmann::json as_json();
+  virtual json as_json();
+};
+
+
+struct StartGame : public MethodArgs
+{
+  virtual ~StartGame() {};
+  virtual json as_json();
+
+  std::string    mode;
+  std::string    difficult;
+  size_t         board_size;
+  std::string    player_color;
 };
 
 
 struct Back : public MethodArgs
 {
   virtual ~Back() {};
-  virtual nlohmann::json as_json();
+  virtual json as_json();
 
   std::string               color;
   std::string               position;
@@ -46,7 +58,7 @@ struct Back : public MethodArgs
 struct MakeTurn : public MethodArgs
 {
   virtual ~MakeTurn() {};
-  virtual nlohmann::json as_json();
+  virtual json as_json();
 
   std::string               color;
   std::string               position;
@@ -58,7 +70,7 @@ struct MakeTurn : public MethodArgs
 struct Hints : public MethodArgs
 {
   virtual ~Hints() {};
-  virtual nlohmann::json as_json();
+  virtual json as_json();
 
   std::vector<std::string>  hints;
 };
@@ -67,7 +79,7 @@ struct Hints : public MethodArgs
 struct Winner : public MethodArgs
 {
   virtual ~Winner() {};
-  virtual nlohmann::json as_json();
+  virtual json as_json();
 
   std::string  winner;
 };
@@ -84,23 +96,27 @@ void from_json(const json& j, Hints& p);
 void to_json(json& j, const Back& p);
 void from_json(const json& j, Back& p);
 
+void to_json(json& j, const StartGame& p);
+void from_json(const json& j, StartGame& p);
 
 class ArgumentFactory {
 
 public:
 
-  static GomokuMethod::pointer createArguments(std::string method, nlohmann::json& arguments) {
+  static GomokuMethod::pointer createArguments(std::string method, json& arguments) {
 
     MethodArgs::pointer arg_ptr;
 
     if (method == "make_turn")
       arg_ptr = std::make_shared<MakeTurn>(arguments.get<MakeTurn>());
-    else if (method == "winner")
-      arg_ptr = std::make_shared<Winner>(arguments.get<Winner>());
     else if (method == "print_hints")
       arg_ptr = std::make_shared<Hints>(arguments.get<Hints>());
     else if (method == "back")
       arg_ptr = std::make_shared<Back>(arguments.get<Back>());
+    else if (method == "winner")
+      arg_ptr = std::make_shared<Winner>(arguments.get<Winner>());
+    else if (method == "start_game")
+      arg_ptr = std::make_shared<StartGame>(arguments.get<StartGame>());
     else
       arg_ptr = MethodArgs::pointer(new EmptyArg());
 

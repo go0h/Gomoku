@@ -5,7 +5,8 @@
 Minimax::Minimax(Board state, t_color player, size_t depth)
   : _state(state),
     _player(player),
-    _depth(depth) { }
+    _depth(depth),
+    _possible_moves(t_possible_moves(state.getSide() * state.getSide())) { }
 
 
 Minimax::~Minimax() { }
@@ -28,19 +29,17 @@ Minimax::t_move_eval Minimax::min_max(Board& state, size_t depth, t_color player
   if (!depth)
     return best;
 
-  t_possible_moves* possible_moves = get_possible_moves(state);
+  fill_possible_moves(state);
 
-  if (!possible_moves->size()) {
+  if (!_possible_moves.size()) {
     return best;
   }
 
-  best.coord = *possible_moves->begin();
+  best.coord = _possible_moves[0];
 
   best_score = evaluate_state(state, player);
 
-  for (auto it = possible_moves->begin(); it != possible_moves->end(); ++it) {
-
-    t_coord move = *it;
+  for (t_coord& move: _possible_moves) {
 
     state(move) = player;
 
@@ -55,27 +54,21 @@ Minimax::t_move_eval Minimax::min_max(Board& state, size_t depth, t_color player
         best = { best_score, move };
     }
   }
-
-  delete possible_moves;
-
+  _possible_moves.clear();
   return best;
 }
 
 
 //TODO find possible moves
-Minimax::t_possible_moves* get_possible_moves(Board& state) {
+void Minimax::fill_possible_moves(Board& state) {
 
-  Minimax::t_possible_moves* possible_moves = new Minimax::t_possible_moves();
-
-  for (size_t y = 0; y < state.getSide(); ++y) {
+   for (size_t y = 0; y < state.getSide(); ++y) {
     for (size_t x = 0; x < state.getSide(); ++x) {
       if (state(x, y) == EMPTY) {
-        possible_moves->push_back({x, y});
+        _possible_moves.push_back({x, y});
       }
     }
   }
-
-  return possible_moves;
 }
 
 #include <ctime>

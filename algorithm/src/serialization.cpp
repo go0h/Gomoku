@@ -43,6 +43,13 @@ nlohmann::json EmptyArg::as_json() {
 }
 
 
+nlohmann::json StartGame::as_json() {
+  json js = json::object();
+  to_json(js, *this);
+  return js;
+}
+
+
 void to_json(json& j, const MakeTurn& p) {
   j = json {
     {"color",    p.color},
@@ -99,4 +106,22 @@ void to_json(json& j, const Winner& p) {
 
 void from_json(const json& j, Winner& p) {
   j.at("winner").get_to(p.winner);
+}
+
+
+void to_json(json& j, const StartGame& p) {
+  j = json {
+    {"mode",          p.mode},
+    {"difficult",     p.difficult},
+    {"board_size",    p.board_size},
+    {"player_color",  p.player_color}
+  };
+}
+
+
+void from_json(const json& j, StartGame& p) {
+  j.at("mode").get_to(p.mode);
+  j.at("difficult").get_to(p.difficult);
+  j.at("board_size").get_to(p.board_size);
+  j.at("player_color").get_to(p.player_color);
 }

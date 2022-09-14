@@ -6,7 +6,7 @@
 #    By: astripeb <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2020/05/31 20:08:29 by astripeb          #+#    #+#              #
-#    Updated: 2022/09/13 21:24:40 by astripeb         ###   ########.fr        #
+#    Updated: 2022/09/14 09:08:40 by astripeb         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -21,7 +21,7 @@ INC_DIR			:= ./algorithm/include
 OBJ_DIR			:= ./obj
 
 SRCS				:= main.cpp Server.cpp GomokuGuiConnection.cpp Gomoku.cpp \
-							 serialization.cpp utils.cpp gomoku_utils.cpp Board.cpp \
+							 serialization.cpp gomoku_utils.cpp Board.cpp \
 							 GomokuException.cpp Minimax.cpp
 
 

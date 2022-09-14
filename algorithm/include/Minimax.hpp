@@ -9,9 +9,6 @@
 #include "utils.hpp"
 
 
-
-
-
 class Minimax
 {
 public:
@@ -31,15 +28,16 @@ public:
   t_coord     min_max(size_t depth);
   t_move_eval min_max(Board& state, size_t depth, t_color player, t_color opponent);
 
+  void        fill_possible_moves(Board& state);
+
 private:
 
-  Board        _state;
-  t_color      _player;
-  size_t       _depth;
+  Board                _state;
+  t_color              _player;
+  size_t               _depth;
+  t_possible_moves     _possible_moves;
+
 };
-
-
-Minimax::t_possible_moves* get_possible_moves(Board& state);
 
 double evaluate_state(Board& state, t_color player);
 
