@@ -6,7 +6,7 @@
 #    By: astripeb <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2020/05/31 20:08:29 by astripeb          #+#    #+#              #
-#    Updated: 2022/09/14 09:08:40 by astripeb         ###   ########.fr        #
+#    Updated: 2022/09/14 11:22:29 by astripeb         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -22,7 +22,7 @@ OBJ_DIR			:= ./obj
 
 SRCS				:= main.cpp Server.cpp GomokuGuiConnection.cpp Gomoku.cpp \
 							 serialization.cpp gomoku_utils.cpp Board.cpp \
-							 GomokuException.cpp Minimax.cpp
+							 GomokuException.cpp Minimax.cpp moves.cpp
 
 
 OBJ					:= $(SRCS:.cpp=.o)

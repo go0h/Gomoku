@@ -25,12 +25,16 @@ public:
   Minimax(Board state, t_color player, size_t depth);
   ~Minimax();
 
-  t_coord     min_max(size_t depth);
+  t_coord     min_max();
   t_move_eval min_max(Board& state, size_t depth, t_color player, t_color opponent);
 
-  void        fill_possible_moves(Board& state);
+  void        fill_possible_moves(t_color player);
 
 private:
+
+  bool _not_forbidden(size_t x, size_t y, t_color player);
+  bool _is_possible_capture(size_t x, size_t y, t_color player);
+  size_t _get_num_of_free_threes(size_t x, size_t y, t_color player);
 
   Board                _state;
   t_color              _player;

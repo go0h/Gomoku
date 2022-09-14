@@ -3,7 +3,7 @@ import tkinter as ttk
 import webbrowser as wb
 
 from threading import Thread
-from gui import BoardGui
+from gui import BoardGui, board
 from gui import GameConfig
 
 from constants import (
@@ -196,6 +196,14 @@ class GomokuGui:
             elif method_name in ["winner", "back", "start_game"]:
                 print(f"Method '{method_name}' - OK")
             elif method_name in dir(self._board):
+
+                # Test backend for forbidden moves
+                if method_name == "make_turn":
+                    pos = data["arguments"]["position"]
+                    color = data["arguments"]["color"]
+                    if self._board._board.is_forbidden_turn_pos(pos, color):
+                        raise Exception(f"Bad move with position={pos} and color={color}")
+
                 method = self._board.__getattribute__(method_name)
                 method(**arguments)
             else:

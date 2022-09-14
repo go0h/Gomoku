@@ -12,9 +12,9 @@ Minimax::Minimax(Board state, t_color player, size_t depth)
 Minimax::~Minimax() { }
 
 
-t_coord Minimax::min_max(size_t depth) {
+t_coord Minimax::min_max() {
 
-  t_move_eval best_move = min_max(_state, depth, _player, (_player == WHITE ? BLACK : WHITE));
+  t_move_eval best_move = min_max(_state, _depth, _player, (_player == WHITE ? BLACK : WHITE));
 
   return best_move.coord;
 }
@@ -22,24 +22,21 @@ t_coord Minimax::min_max(size_t depth) {
 
 Minimax::t_move_eval Minimax::min_max(Board& state, size_t depth, t_color player, t_color opponent) {
 
+  fill_possible_moves(player);
+
   t_coord coord = {0, 0};
-  double best_score = -1.0;
+
+  double best_score = evaluate_state(state, player);
+
   t_move_eval best = { best_score, coord };
 
-  if (!depth)
-    return best;
-
-  fill_possible_moves(state);
-
-  if (!_possible_moves.size()) {
+  if (!depth || _possible_moves.empty()) {
     return best;
   }
 
   best.coord = _possible_moves[0];
 
-  best_score = evaluate_state(state, player);
-
-  for (t_coord& move: _possible_moves) {
+  for (t_coord move: _possible_moves) {
 
     state(move) = player;
 
@@ -54,36 +51,6 @@ Minimax::t_move_eval Minimax::min_max(Board& state, size_t depth, t_color player
         best = { best_score, move };
     }
   }
-  _possible_moves.clear();
+
   return best;
-}
-
-
-//TODO find possible moves
-void Minimax::fill_possible_moves(Board& state) {
-
-   for (size_t y = 0; y < state.getSide(); ++y) {
-    for (size_t x = 0; x < state.getSide(); ++x) {
-      if (state(x, y) == EMPTY) {
-        _possible_moves.push_back({x, y});
-      }
-    }
-  }
-}
-
-#include <ctime>
-#include <random>
-
-// TODO TEST ONLY
-double evaluate_state(Board& state, t_color player) {
-
-  state.getSide();
-  player = (player == WHITE) ? BLACK : WHITE;
-
-  static std::default_random_engine re {};
-  using Dist = std::uniform_int_distribution<int>;
-
-  static Dist uid {};
-
-  return uid(re, Dist::param_type{0,100000000});
 }

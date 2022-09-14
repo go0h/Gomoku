@@ -33,7 +33,7 @@ int main() {
 
   Minimax mm = Minimax(board, WHITE, 3);
 
-  t_coord best_move = mm.min_max(3);
+  t_coord best_move = mm.min_max();
 
   board(best_move) = WHITE;
 

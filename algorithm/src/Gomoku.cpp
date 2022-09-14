@@ -93,7 +93,7 @@ MethodArgs::pointer Gomoku::_make_turn(MethodArgs::pointer args) {
   }
 
   Minimax minimax = Minimax(_board, _color, _difficult);
-  t_coord move = minimax.min_max(_difficult);
+  t_coord move = minimax.min_max();
   _board(move) = _color;
 
   MakeTurn* mt = new MakeTurn();
