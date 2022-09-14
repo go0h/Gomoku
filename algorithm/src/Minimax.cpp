@@ -22,7 +22,7 @@ t_coord Minimax::min_max() {
 
 Minimax::t_move_eval Minimax::min_max(Board& state, size_t depth, t_color player, t_color opponent) {
 
-  fill_possible_moves(player);
+  t_possible_moves possible_moves = get_possible_moves(player);
 
   t_coord coord = {0, 0};
 
@@ -30,13 +30,13 @@ Minimax::t_move_eval Minimax::min_max(Board& state, size_t depth, t_color player
 
   t_move_eval best = { best_score, coord };
 
-  if (!depth || _possible_moves.empty()) {
+  if (!depth || possible_moves.empty()) {
     return best;
   }
 
-  best.coord = _possible_moves[0];
+  best.coord = possible_moves[0];
 
-  for (t_coord move: _possible_moves) {
+  for (t_coord& move: possible_moves) {
 
     state(move) = player;
 
@@ -51,6 +51,5 @@ Minimax::t_move_eval Minimax::min_max(Board& state, size_t depth, t_color player
         best = { best_score, move };
     }
   }
-
   return best;
 }

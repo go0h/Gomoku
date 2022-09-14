@@ -28,7 +28,7 @@ public:
   t_coord     min_max();
   t_move_eval min_max(Board& state, size_t depth, t_color player, t_color opponent);
 
-  void        fill_possible_moves(t_color player);
+  t_possible_moves get_possible_moves(t_color player);
 
 private:
 

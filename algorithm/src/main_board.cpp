@@ -31,6 +31,10 @@ int main() {
   std::cout << board.coord_to_pos(s1) << std::endl;
   assert(board.coord_to_pos(s1) == "s1");
 
+  t_coord e11 = {4, 8};
+  std::cout << board.coord_to_pos(e11) << std::endl;
+  assert(board.coord_to_pos(e11) == "e11");
+
   Minimax mm = Minimax(board, WHITE, 3);
 
   t_coord best_move = mm.min_max();
