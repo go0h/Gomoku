@@ -39,7 +39,7 @@ int32_t CATCHES[3][2] = {
 };
 
 //TODO optimize
-static size_t _get_free_threes(t_point* field, int side, int x, int y, int x_dir, int y_dir, t_color player) {
+static size_t get_free_three_by_dir(t_point* field, int side, int x, int y, int x_dir, int y_dir, t_color player) {
 
   size_t three_num = 0;
 
@@ -82,19 +82,19 @@ size_t Minimax::_get_num_of_free_threes(size_t x, size_t y, t_color player) {
 
   // horizontal
   if (x > 0 && x < side - 1)
-    three_num += _get_free_threes(field, side, x, y, 1, 0, player);
+    three_num += get_free_three_by_dir(field, side, x, y, 1, 0, player);
 
   // vertical
   if (y > 0 && y < side - 1)
-    three_num += _get_free_threes(field, side, x, y, 0, 1, player);
+    three_num += get_free_three_by_dir(field, side, x, y, 0, 1, player);
 
   if (x > 0 && x < side - 1 && y > 0 && y < side - 1) {
 
     // diagonal top-left <-> bottom-right
-    three_num += _get_free_threes(field, side, x, y, 1, 1, player);
+    three_num += get_free_three_by_dir(field, side, x, y, 1, 1, player);
 
     // diagonal top-right <-> bottom-left
-    three_num += _get_free_threes(field, side, x, y, 1, -1, player);
+    three_num += get_free_three_by_dir(field, side, x, y, 1, -1, player);
   }
 
   _state(x, y) = EMPTY;

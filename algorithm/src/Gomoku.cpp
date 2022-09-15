@@ -9,9 +9,9 @@ using json = nlohmann::json;
 
 Gomoku::Gomoku() :
   _mode(PvE),
-  _color(WHITE),
+  _player(WHITE),
   _difficult(EASY),
-  _board_size(19) { }
+  _board(Board(19)) { }
 
 
 std::string Gomoku::process(GomokuMethod::pointer gm) {
@@ -20,7 +20,7 @@ std::string Gomoku::process(GomokuMethod::pointer gm) {
   MethodArgs::pointer arguments = ((this->*(met))(gm->arguments));
 
   if (_mode == PvP)
-    _swith_color();
+    _switch_player();
 
   _board.printBoard();
   std::cout << std::endl;
@@ -36,7 +36,7 @@ MethodArgs::pointer Gomoku::_start_game(MethodArgs::pointer args) {
   StartGame* st = dynamic_cast<StartGame*>(args.get());
 
   _mode = st->mode == "PvP" ? PvP : PvE;
-  _color = st->player_color == "WHITE" ? BLACK : WHITE;
+  _player = st->player_color == "WHITE" ? BLACK : WHITE;
   _difficult = EASY;
 
   if (st->difficult == "MEDIUM")
@@ -44,8 +44,7 @@ MethodArgs::pointer Gomoku::_start_game(MethodArgs::pointer args) {
   else if (st->difficult == "HARD")
     _difficult = HARD;
 
-  _board_size = st->board_size;
-  _board = Board(_board_size);
+  _board = Board(st->board_size);
 
   #ifdef DEBUG
     _print_config();
@@ -92,15 +91,15 @@ MethodArgs::pointer Gomoku::_make_turn(MethodArgs::pointer args) {
     _board(capture) = EMPTY;
   }
 
-  Minimax minimax = Minimax(_board, _color, _difficult);
+  Minimax minimax = Minimax(_board, _player, _difficult);
   t_coord move = minimax.min_max();
-  _board(move) = _color;
+  _board(move) = _player;
 
   MakeTurn* mt = new MakeTurn();
 
   mt->position = _board.coord_to_pos(move);
 
-  mt->color = _color2str[_color];
+  mt->color = _color2str[_player];
   mt->hints = std::vector<std::string>();
   mt->captures = std::vector<std::string>();
 

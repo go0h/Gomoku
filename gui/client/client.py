@@ -52,8 +52,12 @@ class Client:
         return message
 
     def get_data(self) -> t.Generator:
-        while True:
+        while self.connection:
             yield self.connection.recv(self._server_batch_size).decode(self._server_encoding)
+
+    def close(self):
+        self._connection.close()
+        self._connection = None
 
 
 if __name__ == '__main__':

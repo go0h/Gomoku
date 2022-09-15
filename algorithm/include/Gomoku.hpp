@@ -35,7 +35,7 @@ public:
 private:
 
   void _print_config();
-  void _swith_color() { _color = (_color == WHITE ? BLACK : WHITE); }
+  void _switch_player() { _player = (_player == WHITE ? BLACK : WHITE); }
 
   MethodArgs::pointer _back(MethodArgs::pointer args);
   MethodArgs::pointer _start_game(MethodArgs::pointer args);
@@ -45,10 +45,9 @@ private:
   MethodArgs::pointer _winner(MethodArgs::pointer args);
 
   t_gomoku_mode                 _mode;
-  t_color                       _color;
+  t_color                       _player;
   t_difficult                   _difficult;
   Board                         _board;
-  unsigned                      _board_size;
 
   std::map<std::string, method> _commands =
   {

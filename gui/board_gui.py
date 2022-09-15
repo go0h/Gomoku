@@ -166,7 +166,7 @@ class BoardGui:
         self._board_canvas.unbind('<Button-1>')
         self._print_win_strike(strike)
         self._moves.set(self._moves.get() + 1)
-        self._send_func(method="winner", arguments={"winner": f"Player {self._cur_player.get_name()} wins"})
+        self._send_func(method="winner", arguments={"winner": self._cur_player._color})
         self._switch_player()
         self._stop_move_time()
 

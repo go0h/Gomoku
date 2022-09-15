@@ -32,8 +32,8 @@ public:
 
 private:
 
-  bool _not_forbidden(size_t x, size_t y, t_color player);
-  bool _is_possible_capture(size_t x, size_t y, t_color player);
+  bool   _not_forbidden(size_t x, size_t y, t_color player);
+  bool   _is_possible_capture(size_t x, size_t y, t_color player);
   size_t _get_num_of_free_threes(size_t x, size_t y, t_color player);
 
   Board                _state;

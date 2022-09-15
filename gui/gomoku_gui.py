@@ -1,4 +1,6 @@
 import json
+from operator import le
+import re
 import tkinter as ttk
 import webbrowser as wb
 
@@ -34,6 +36,7 @@ class GomokuGui:
         self._root.geometry(f"{width}x{height}+{x}+{y}")
         self._root.update()
 
+    def start(self):
         try:
             self._client.connect_to_server()
             self._root.protocol("WM_DELETE_WINDOW", self._end_game)
@@ -43,7 +46,6 @@ class GomokuGui:
             self._client = None
             print("Can't connect to server. Game available only PvP mode")
 
-    def start(self):
         self.print_config()
         self._root.mainloop()
 
@@ -186,7 +188,19 @@ class GomokuGui:
 
     def _listen_server(self):
         for message in self._client.get_data():
-            data = json.loads(message)
+
+            if len(message) == 0:
+                print(f'Server close connection')
+                self._client.close()
+                self._client = None
+                return
+
+            try:
+                data = json.loads(message)
+            except Exception as e:
+                print(f'Client receive bad format data: {data}')
+                continue
+
             print(f'Client receive:\n {data}')
             method_name = data.get("method")
             arguments = data.get("arguments")
