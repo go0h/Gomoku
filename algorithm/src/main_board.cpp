@@ -2,7 +2,7 @@
 #include <assert.h>
 #include "utils.hpp"
 #include "Board.hpp"
-#include "Minimax.hpp"
+#include "Gomoku.hpp"
 
 
 int main() {
@@ -35,9 +35,10 @@ int main() {
   std::cout << board.coord_to_pos(e11) << std::endl;
   assert(board.coord_to_pos(e11) == "e11");
 
-  Minimax mm = Minimax(board, WHITE, 3);
 
-  t_coord best_move = mm.min_max();
+  Gomoku gomoku = Gomoku(Gomoku::PvE, WHITE, Gomoku::EASY, 19);
+
+  t_coord best_move = gomoku.min_max();
 
   board(best_move) = WHITE;
 

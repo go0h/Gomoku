@@ -2,9 +2,13 @@
 #ifndef GOMOKU_HPP_
 # define GOMOKU_HPP_
 
+# define PLUS_INF  (1.0 / 0.0)
+# define MINUS_INF (-1.0 / 0.0)
+
+
 #include <nlohmann/json.hpp>
-#include "gomoku_methods.hpp"
 #include "Board.hpp"
+#include "gomoku_methods.hpp"
 
 
 class Gomoku
@@ -12,31 +16,47 @@ class Gomoku
 
 public:
 
-  typedef enum s_gomoku_mode {
+  typedef enum    s_gomoku_mode {
     PvE,
     PvP
-  }            t_gomoku_mode;
+  }               t_gomoku_mode;
 
-  typedef enum s_difficult {
-    EASY       = 3,
-    MEDIUM     = 7,
-    HARD       = 11
-  }            t_difficult;
+  typedef enum    s_difficult {
+    EASY    = 3,
+    MEDIUM  = 7,
+    HARD    = 11
+  }               t_difficult;
+
+  typedef struct  s_move_eval
+  {
+    double    score;
+    size_t    x;
+    size_t    y;
+  }               t_move_eval;
 
   typedef MethodArgs::pointer (Gomoku::*method)(MethodArgs::pointer);
+  using t_possible_moves = std::vector<t_move_eval>;
 
 
   Gomoku();
+  Gomoku(t_gomoku_mode mode, t_color color, t_difficult difficult, size_t board_size);
   ~Gomoku() {};
 
   std::string process(GomokuMethod::pointer gm);
 
 
+  /*
+   *  Minimax
+   */
+  t_coord     min_max();
+  t_move_eval min_max(Board& state, size_t depth, t_color player, t_color opponent);
+
+
 private:
 
-  void _print_config();
-  void _switch_player() { _player = (_player == WHITE ? BLACK : WHITE); }
-
+  /*
+   *  Methods
+   */
   MethodArgs::pointer _back(MethodArgs::pointer args);
   MethodArgs::pointer _start_game(MethodArgs::pointer args);
   MethodArgs::pointer _end_game(MethodArgs::pointer args);
@@ -44,10 +64,24 @@ private:
   MethodArgs::pointer _print_hints(MethodArgs::pointer args);
   MethodArgs::pointer _winner(MethodArgs::pointer args);
 
+  /*
+   *  minimax utils
+   */
+  t_possible_moves _get_possible_moves(t_color player);
+
+
+  /*
+   *  Utils
+   */
+  void _print_config();
+  void _switch_player() { _player = (_player == WHITE ? BLACK : WHITE); }
+
+
   t_gomoku_mode                 _mode;
   t_color                       _player;
   t_difficult                   _difficult;
   Board                         _board;
+  int                           _captures[3] = { 0, 0, 0 };
 
   std::map<std::string, method> _commands =
   {
@@ -66,5 +100,7 @@ private:
   };
   std::vector<std::string> _color2str = { "", "white", "black" };
 };
+
+double evaluate_state(Board& state, t_color player);
 
 #endif // GOMOKU_HPP_

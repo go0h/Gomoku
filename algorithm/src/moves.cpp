@@ -1,7 +1,4 @@
 
-#include "Minimax.hpp"
-
-
 #define _WWW_   0x0001010100
 #define _BBB_   0x0002020200
 
@@ -16,6 +13,13 @@
 
 #define W_BW    0x01000201
 #define WB_W    0x01020001
+
+#include <random>
+#include "Gomoku.hpp"
+#include <iostream>
+
+
+using Dist = std::uniform_int_distribution<size_t>;
 
 
 int DIRECTIONS[8][2] = {
@@ -39,7 +43,7 @@ int32_t CATCHES[3][2] = {
 };
 
 //TODO optimize
-static size_t get_free_three_by_dir(t_point* field, int side, int x, int y, int x_dir, int y_dir, t_color player) {
+size_t get_free_three_by_dir(t_point* field, int side, int x, int y, int x_dir, int y_dir, t_color player) {
 
   size_t three_num = 0;
 
@@ -69,16 +73,13 @@ static size_t get_free_three_by_dir(t_point* field, int side, int x, int y, int 
 }
 
 
-size_t Minimax::_get_num_of_free_threes(size_t x, size_t y, t_color player) {
+size_t get_num_of_free_threes(t_point* field, size_t side, size_t x, size_t y, t_color player) {
 
   size_t three_num = 0;
 
-  if (_state(x, y) != EMPTY)
+  if (field[y * side + x] != EMPTY)
     return three_num;
-  _state(x, y) = player;
-
-  size_t side = _state.getSide();
-  t_point* field = _state.getField();
+  field[y * side + x] = player;
 
   // horizontal
   if (x > 0 && x < side - 1)
@@ -97,12 +98,12 @@ size_t Minimax::_get_num_of_free_threes(size_t x, size_t y, t_color player) {
     three_num += get_free_three_by_dir(field, side, x, y, 1, -1, player);
   }
 
-  _state(x, y) = EMPTY;
+  field[y * side + x] = EMPTY;
   return three_num;
 }
 
 
-static size_t is_capture(t_point* field, size_t side, int x, int y, int x_dir, int y_dir, t_color player) {
+size_t is_capture(t_point* field, size_t side, int x, int y, int x_dir, int y_dir, t_color player) {
 
   for (size_t j = 0; j < 2; ++j) {
 
@@ -128,10 +129,7 @@ static size_t is_capture(t_point* field, size_t side, int x, int y, int x_dir, i
 }
 
 
-bool Minimax::_is_possible_capture(size_t x, size_t y, t_color player) {
-
-  size_t side = _state.getSide();
-  t_point* field = _state.getField();
+bool is_possible_capture(t_point* field, size_t side, size_t x, size_t y, t_color player) {
 
   // horizontal
   if (is_capture(field, side, x - 1, y, 1, 0, player) || is_capture(field, side, x - 2, y, 1, 0, player))
@@ -153,43 +151,97 @@ bool Minimax::_is_possible_capture(size_t x, size_t y, t_color player) {
 }
 
 
-bool Minimax::_not_forbidden(size_t x, size_t y, t_color player) {
-  return _get_num_of_free_threes(x, y, player) < 2 && !_is_possible_capture(x, y, player);
+bool not_forbidden(t_point* field, size_t side, size_t x, size_t y, t_color player) {
+  return get_num_of_free_threes(field, side, x, y, player) < 2 && \
+        !is_possible_capture(field, side, x, y, player);
 }
 
 
-Minimax::t_possible_moves Minimax::get_possible_moves(t_color player) {
+double pre_evaluate_step(t_point* field, size_t side, size_t x, size_t y, t_color player) {
 
-  player = player == WHITE ? WHITE : BLACK;
+	double score = 0.0;
 
-  Minimax::t_possible_moves pm = Minimax::t_possible_moves();
-  size_t side = _state.getSide();
+	for (int i = 0; i < 8; ++i) {
+
+    size_t _x = x;
+	  size_t _y = y;
+		int x_dir = DIRECTIONS[i][0];
+		int y_dir = DIRECTIONS[i][1];
+
+    size_t points_in_row = 0;
+
+    for (;;) {
+			_x += x_dir;
+			_y += y_dir;
+			if (_x < side &&  _y < side && field[_y * side + x] == player)
+				points_in_row = (points_in_row + 1) * 2;
+			else
+				break;
+		}
+		score += points_in_row;
+	}
+	return score;
+}
+
+
+bool compare_moves(Gomoku::t_move_eval& m1, Gomoku::t_move_eval& m2) {
+  return m1.score > m2.score;
+}
+
+
+Gomoku::t_move_eval get_random_move(t_point* field, size_t side, t_color player) {
+
+  static std::default_random_engine re {};
+  static Dist                       uid {};
+
+  for(size_t i = 0; i < side * side; ++i) {
+    size_t x = uid(re, Dist::param_type{0, side - 1});
+    size_t y = uid(re, Dist::param_type{0, side - 1});
+
+    if (field[y * side + x] == EMPTY && not_forbidden(field, side, x, y, player))
+      return { 0.0, x, y };
+  }
+  return { MINUS_INF, 0, 0 };
+}
+
+
+Gomoku::t_possible_moves Gomoku::_get_possible_moves(t_color player) {
+
+  // player = player == WHITE ? WHITE : BLACK;
+
+  size_t side = _board.getSide();
+  t_point* field = _board.getField();
+
+  t_possible_moves pm = t_possible_moves();
   pm.reserve(side * side);
 
   for (size_t y = 0; y < side; ++y) {
     for (size_t x = 0; x < side; ++x) {
 
-      if (_state(x, y) != EMPTY)
+      if (_board(x, y) != EMPTY)
         continue;
 
       for (size_t i = 0; i < 8; ++i) {
         size_t _x = x + DIRECTIONS[i][0];
         size_t _y = y + DIRECTIONS[i][1];
-        if (_x < side && _y < side && _state(_x, _y) != EMPTY) {
-
-          if (_not_forbidden(x, y, player))
-            pm.push_back({x, y});
-
+        if (_x < side && _y < side && _board(_x, _y) != EMPTY) {
+          if (not_forbidden(field, side, x, y, player)) {
+            double score = pre_evaluate_step(field, side, x, y, player);
+            pm.push_back({ score, x, y});
+          }
           break;
         }
       }
     }
   }
+  if (pm.empty()) {
+    pm.push_back(get_random_move(field, side, player));
+  }
+
+  std::sort(pm.begin(), pm.end(), compare_moves);
   return pm;
 }
 
-#include <ctime>
-#include <random>
 
 // TODO TEST ONLY
 double evaluate_state(Board& state, t_color player) {

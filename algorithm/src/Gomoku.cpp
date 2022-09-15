@@ -1,8 +1,6 @@
 
 #include "utils.hpp"
 #include "Gomoku.hpp"
-#include "Minimax.hpp"
-
 
 using json = nlohmann::json;
 
@@ -14,8 +12,14 @@ Gomoku::Gomoku() :
   _board(Board(19)) { }
 
 
-std::string Gomoku::process(GomokuMethod::pointer gm) {
+Gomoku::Gomoku(t_gomoku_mode mode, t_color color, t_difficult difficult, size_t board_size) :
+  _mode(mode),
+  _player(color),
+  _difficult(difficult),
+  _board(Board(board_size)) { }
 
+
+std::string Gomoku::process(GomokuMethod::pointer gm) {
   method met = _commands[gm->name];
   MethodArgs::pointer arguments = ((this->*(met))(gm->arguments));
 
@@ -45,6 +49,7 @@ MethodArgs::pointer Gomoku::_start_game(MethodArgs::pointer args) {
     _difficult = HARD;
 
   _board = Board(st->board_size);
+  memset(_captures, 0, sizeof(_captures));
 
   #ifdef DEBUG
     _print_config();
@@ -64,6 +69,7 @@ MethodArgs::pointer Gomoku::_back(MethodArgs::pointer args) {
   for (std::string& capture : back->captures) {
     _board(capture) = restore_color;
   }
+  _captures[_str2color[back->color]] += back->captures.size();
 
   return args;
 }
@@ -85,14 +91,15 @@ MethodArgs::pointer Gomoku::_make_turn(MethodArgs::pointer args) {
 
   MakeTurn* turn = dynamic_cast<MakeTurn*>(args.get());
 
-  _board(turn->position) = _str2color[turn->color];
+  t_color opponent = _str2color[turn->color];
+  _board(turn->position) = opponent;
 
   for (std::string& capture : turn->captures) {
     _board(capture) = EMPTY;
   }
+  _captures[opponent] += turn->captures.size();
 
-  Minimax minimax = Minimax(_board, _player, _difficult);
-  t_coord move = minimax.min_max();
+  t_coord move = min_max();
   _board(move) = _player;
 
   MakeTurn* mt = new MakeTurn();
