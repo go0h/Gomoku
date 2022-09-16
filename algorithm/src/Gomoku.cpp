@@ -9,14 +9,35 @@ Gomoku::Gomoku() :
   _mode(PvE),
   _player(WHITE),
   _difficult(EASY),
-  _board(Board(19)) { }
+  _board(Board(19))
+{
+  _depth_state = new t_depth_state[_difficult + 1];
+
+  for (size_t i = 0; i <= _difficult; ++i) {
+    _depth_state[i].poss_moves.reserve(_board.getSide() * _board.getSide());
+    // _depth_state[i].depth_catches.reserve(_board.getSide() * _board.getSide());
+  }
+
+}
 
 
 Gomoku::Gomoku(t_gomoku_mode mode, t_color color, t_difficult difficult, size_t board_size) :
   _mode(mode),
   _player(color),
   _difficult(difficult),
-  _board(Board(board_size)) { }
+  _board(Board(board_size))
+{
+  _depth_state = new t_depth_state[_difficult + 1];
+
+  for (size_t i = 0; i <= _difficult; ++i) {
+    _depth_state[i].poss_moves.reserve(_board.getSide() * _board.getSide());
+    // _depth_state[i].depth_catches.reserve(_board.getSide() * _board.getSide());
+  }
+}
+
+Gomoku::~Gomoku() {
+  delete[] _depth_state;
+}
 
 
 std::string Gomoku::process(GomokuMethod::pointer gm) {
@@ -50,6 +71,11 @@ MethodArgs::pointer Gomoku::_start_game(MethodArgs::pointer args) {
 
   _board = Board(st->board_size);
   memset(_captures, 0, sizeof(_captures));
+
+  for (size_t i = 0; i <= _difficult; ++i) {
+    _depth_state[i].poss_moves.clear();
+    // _depth_state[i].depth_catches.reserve(_board.getSide() * _board.getSide());
+  }
 
   #ifdef DEBUG
     _print_config();

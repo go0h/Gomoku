@@ -50,16 +50,18 @@ size_t get_free_three_by_dir(t_point* field, int side, int x, int y, int x_dir, 
   for (size_t p_num = 0; p_num < 3; ++p_num) {
 
     size_t pattern = FREE_THREE[player][p_num];
-    int is_free_tree = 1;
 
-    for (int i = 1; i < FREE_THREE[0][p_num] - 1; ++i) {
+    for (int i = 1; i < FREE_THREE[0][p_num]; ++i) {
+        int is_free_tree = 1;
+        int x_p = x - i * x_dir;
+        int y_p = y - i * y_dir;
 
       for (int j = 0; j < FREE_THREE[0][p_num]; ++j) {
-        int x_ = x + j * x_dir;
-        int y_ = y + j * y_dir;
+        int x_ = x_p + j * x_dir;
+        int y_ = y_p + j * y_dir;
         t_point pp = (pattern >> (j * 8)) & 0xFF;
 
-        if (x_ > 0 && x_ < side && y_ > 0 && y_ < side && field[y_ * side + x_] == pp) {
+        if (x_ > -1 && x_ < side && y_ > -1 && y_ < side && field[y_ * side + x_] == pp) {
           continue;
         } else {
           is_free_tree = 0;
@@ -113,7 +115,7 @@ size_t is_capture(t_point* field, size_t side, int x, int y, int x_dir, int y_di
       size_t x_ = x + i * x_dir;
       size_t y_ = y + i * y_dir;
 
-      t_point pp = (CATCHES[player][j] >> ((i * x_dir) * 8)) & 0xFF;
+      t_point pp = (CATCHES[player][j] >> (i * 8)) & 0xFF;
 
       if (x_ < side && y_ < side && field[y_ * side + x_] == pp)
         continue;
@@ -205,13 +207,13 @@ Gomoku::t_move_eval get_random_move(t_point* field, size_t side, t_color player)
 }
 
 
-Gomoku::t_possible_moves Gomoku::_get_possible_moves(t_color player) {
+Gomoku::t_possible_moves& Gomoku::_get_possible_moves(size_t depth, t_color player) {
 
   size_t side = _board.getSide();
   t_point* field = _board.getField();
 
-  t_possible_moves pm = t_possible_moves();
-  pm.reserve(side * side);
+  t_possible_moves& pm = _depth_state[depth].poss_moves;
+  pm.clear();
 
   for (size_t y = 0; y < side; ++y) {
     for (size_t x = 0; x < side; ++x) {

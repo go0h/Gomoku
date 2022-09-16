@@ -5,6 +5,7 @@
 # define PLUS_INF  (1.0 / 0.0)
 # define MINUS_INF (-1.0 / 0.0)
 
+extern int DIRECTIONS[8][2];
 
 #include <nlohmann/json.hpp>
 #include "Board.hpp"
@@ -15,6 +16,9 @@ class Gomoku
 {
 
 public:
+
+  typedef MethodArgs::pointer (Gomoku::*method)(MethodArgs::pointer);
+
 
   typedef enum    s_gomoku_mode {
     PvE,
@@ -34,13 +38,18 @@ public:
     size_t    y;
   }               t_move_eval;
 
-  typedef MethodArgs::pointer (Gomoku::*method)(MethodArgs::pointer);
   using t_possible_moves = std::vector<t_move_eval>;
 
+  typedef struct  s_depth_state
+  {
+    t_possible_moves      poss_moves;
+    size_t                num_moves;
+    std::vector<size_t>   depth_catches;
+  }               t_depth_state;
 
   Gomoku();
   Gomoku(t_gomoku_mode mode, t_color color, t_difficult difficult, size_t board_size);
-  ~Gomoku() {};
+  ~Gomoku();
 
   std::string process(GomokuMethod::pointer gm);
 
@@ -67,7 +76,9 @@ private:
   /*
    *  minimax utils
    */
-  t_possible_moves _get_possible_moves(t_color player);
+  t_possible_moves& _get_possible_moves(size_t depth, t_color player);
+  void              _set_move_and_catch(Board& state, size_t depth, size_t x, size_t y, t_color player);
+  void              _remove_move_and_catches(Board& state, size_t depth, size_t x, size_t y, t_color player);
 
 
   /*
@@ -81,6 +92,7 @@ private:
   t_color                       _player;
   t_difficult                   _difficult;
   Board                         _board;
+  t_depth_state*                _depth_state;
   int                           _captures[3] = { 0, 0, 0 };
 
   std::map<std::string, method> _commands =

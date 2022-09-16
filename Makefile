@@ -6,7 +6,7 @@
 #    By: astripeb <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2020/05/31 20:08:29 by astripeb          #+#    #+#              #
-#    Updated: 2022/09/15 16:28:50 by astripeb         ###   ########.fr        #
+#    Updated: 2022/09/16 14:52:31 by astripeb         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -41,7 +41,7 @@ else
 endif
 
 ifeq ($(DEBUG), 1)
-  CXXFLAGS += -D DEBUG
+  CXXFLAGS += -D DEBUG -g
 endif
 
 vpath %.cpp		$(SRC_DIR)
@@ -52,6 +52,8 @@ all: $(NAME)
 
 run:
 	python3 run_gui.py
+
+test: $(NAME)
 
 $(NAME): $(OBJ)
 	$(CXX) $(CXXFLAGS) $(IFLAGS) $(addprefix $(OBJ_DIR)/,$(OBJ)) -o $@ $(LIBS)

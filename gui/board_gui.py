@@ -224,8 +224,8 @@ class BoardGui:
 
             if self.if_pos_in_bound(x, y):
                 self.set_piece(position, x, y, self._cur_player.get_color())
-                if "captured" in kwargs.keys():
-                    self.hide_captured(position, kwargs["captured"])
+                if "captures" in kwargs.keys():
+                    self.hide_captured(position, kwargs["captures"])
                 if "hints" in kwargs.keys():
                     self.print_hints(**kwargs)
                 self._next()
