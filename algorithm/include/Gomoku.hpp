@@ -48,8 +48,8 @@ public:
   /*
    *  Minimax
    */
-  t_coord     min_max();
-  t_move_eval min_max(Board& state, size_t depth, t_color player, t_color opponent);
+  MakeTurn*   minimax();
+  t_move_eval minimax(Board& state, size_t depth, t_color player, t_color opponent, double low, double high);
 
 
 private:

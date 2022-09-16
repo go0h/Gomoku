@@ -38,9 +38,9 @@ int main() {
 
   Gomoku gomoku = Gomoku(Gomoku::PvE, WHITE, Gomoku::EASY, 19);
 
-  t_coord best_move = gomoku.min_max();
+  MakeTurn* mt = gomoku.minimax();
 
-  board(best_move) = WHITE;
+  board(mt->position) = WHITE;
 
   board("q1") = BLACK;
 
@@ -49,7 +49,9 @@ int main() {
 
   board.printBoard();
 
-  std::cout << "Best move is " << board.coord_to_pos(best_move) << std::endl;
+  std::cout << "Best move is " << mt->position << std::endl;
+
+  delete mt;
 
   return EXIT_SUCCESS;
 }

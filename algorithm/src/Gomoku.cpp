@@ -99,22 +99,42 @@ MethodArgs::pointer Gomoku::_make_turn(MethodArgs::pointer args) {
   }
   _captures[opponent] += turn->captures.size();
 
-  t_coord move = min_max();
-  _board(move) = _player;
+  MakeTurn* move = minimax();
 
-  MakeTurn* mt = new MakeTurn();
+  _board(move->position) = _player;
+  for (std::string& capture : move->captures) {
+    _board(capture) = EMPTY;
+    _captures[_player] += 1;
+  }
 
-  mt->position = _board.coord_to_pos(move);
-
-  mt->color = _color2str[_player];
-  mt->hints = std::vector<std::string>();
-  mt->captures = std::vector<std::string>();
-
-  return MethodArgs::pointer(mt);
+  return MethodArgs::pointer(move);
 }
 
 
 //TODO
 MethodArgs::pointer Gomoku::_print_hints(MethodArgs::pointer args) {
   return args;
+}
+
+
+void Gomoku::_print_config() {
+
+  std::cout << MAGENTA << "Gomoku game [" << this << "] with parameters:" << std::endl;
+  std::cout << GREEN << "Game mode:\t\t" << CYAN << (_mode == PvP ? "PvP" : "PvE") << std::endl;
+
+  std::string difficult = "EASY";
+  if (_difficult == MEDIUM)
+    difficult = "MEDIUM";
+  else if (_difficult == HARD)
+    difficult = "HARD";
+
+  std::cout << GREEN << "Difficult:\t\t" << CYAN << difficult << std::endl;
+  std::cout << GREEN << "Board size:\t\t" << CYAN << _board.getSide() << std::endl;
+
+  std::cout << GREEN << "Player color:\t\t" << CYAN << (_player == WHITE ? "WHITE" : "BLACK") << std::endl;
+  std::cout << GREEN << "Player catches:\t\t" << CYAN << _captures[_player] << std::endl;
+
+  std::cout << GREEN << "Opponent color:\t\t" << CYAN << (_player == WHITE ? "BLACK" : "WHITE") << std::endl;
+  std::cout << GREEN << "Opponent catches:\t" << CYAN << \
+    _captures[(_player == WHITE ? BLACK : WHITE)] << RESET << std::endl;
 }

@@ -14,9 +14,9 @@
 #define W_BW    0x01000201
 #define WB_W    0x01020001
 
+#include <iostream>
 #include <random>
 #include "Gomoku.hpp"
-#include <iostream>
 
 
 using Dist = std::uniform_int_distribution<size_t>;
@@ -207,8 +207,6 @@ Gomoku::t_move_eval get_random_move(t_point* field, size_t side, t_color player)
 
 Gomoku::t_possible_moves Gomoku::_get_possible_moves(t_color player) {
 
-  // player = player == WHITE ? WHITE : BLACK;
-
   size_t side = _board.getSide();
   t_point* field = _board.getField();
 
@@ -240,19 +238,4 @@ Gomoku::t_possible_moves Gomoku::_get_possible_moves(t_color player) {
 
   std::sort(pm.begin(), pm.end(), compare_moves);
   return pm;
-}
-
-
-// TODO TEST ONLY
-double evaluate_state(Board& state, t_color player) {
-
-  state.getSide();
-  player = (player == WHITE) ? BLACK : WHITE;
-
-  static std::default_random_engine re {};
-  using Dist = std::uniform_int_distribution<int>;
-
-  static Dist uid {};
-
-  return uid(re, Dist::param_type{0, 100000000});
 }
