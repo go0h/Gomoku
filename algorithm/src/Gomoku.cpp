@@ -31,8 +31,8 @@ Gomoku::Gomoku(t_gomoku_mode mode, t_color color, t_difficult difficult, size_t 
 
   for (size_t i = 0; i <= _difficult; ++i) {
     _depth_state[i].poss_moves.reserve(_board.getSide() * _board.getSide());
-    // _depth_state[i].depth_catches.reserve(_board.getSide() * _board.getSide());
   }
+
 }
 
 Gomoku::~Gomoku() {
@@ -72,8 +72,12 @@ MethodArgs::pointer Gomoku::_start_game(MethodArgs::pointer args) {
   _board = Board(st->board_size);
   memset(_captures, 0, sizeof(_captures));
 
+  delete[] _depth_state;
+
+  _depth_state = new t_depth_state[_difficult + 1];
+
   for (size_t i = 0; i <= _difficult; ++i) {
-    _depth_state[i].poss_moves.clear();
+    _depth_state[i].poss_moves.reserve(_board.getSide() * _board.getSide());
     // _depth_state[i].depth_catches.reserve(_board.getSide() * _board.getSide());
   }
 
@@ -110,9 +114,7 @@ MethodArgs::pointer Gomoku::_end_game(MethodArgs::pointer args) {
   return args;
 }
 
-#include "utils.hpp"
 
-//TODO
 MethodArgs::pointer Gomoku::_make_turn(MethodArgs::pointer args) {
 
   MakeTurn* turn = dynamic_cast<MakeTurn*>(args.get());

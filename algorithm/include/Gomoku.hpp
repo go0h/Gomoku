@@ -113,6 +113,6 @@ private:
   std::vector<std::string> _color2str = { "", "white", "black" };
 };
 
-double evaluate_state(Board& state, t_color player);
+double evaluate_state(Board& state, size_t depth, t_color player, t_color opponent);
 
 #endif // GOMOKU_HPP_

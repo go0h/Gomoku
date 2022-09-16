@@ -10,6 +10,8 @@ size_t is_capture(t_point* field, size_t side, int x, int y, int x_dir, int y_di
 bool   is_possible_capture(t_point* field, size_t side, size_t x, size_t y, t_color player);
 bool   not_forbidden(t_point* field, size_t side, size_t x, size_t y, t_color player);
 
+double evaluate_state(Board& state, size_t depth, t_color player, t_color opponent);
+
 
 Board get_board_with_pieces(std::map<std::string, t_color> positions) {
 
@@ -50,6 +52,7 @@ bool is_forbidden_turn_pos(Board& board, std::string pos, t_color color) {
 
   return get_num_of_free_threes(board.getField(), board.getSide(), coord.x, coord.y, color) > 1;
 }
+
 
 void test_horizontal_double_three() {
 
@@ -186,6 +189,7 @@ bool is_possible_capture_pos(Board& b, std::string pos, t_color player) {
   return is_possible_capture(b.getField(), b.getSide(), c.x, c.y, player);
 
 }
+
 
 void test_possible_horizontal_capture_left() {
 
@@ -371,6 +375,23 @@ void test_possible_diagonal_capture_top_right() {
 }
 
 
+void test_evaluation() {
+
+  std::map<std::string, t_color> positions = {
+    {"a1", BLACK}, {"a2", BLACK}, {"a3", BLACK}, {"a4", BLACK}, {"a5", BLACK}
+  };
+
+  Board b = get_board_with_pieces(positions);
+
+  double score = evaluate_state(b, Gomoku::EASY, BLACK, WHITE);
+
+  assert(score == 100000);
+
+  std::cout << __func__ << " - OK" << std::endl;
+}
+
+
+
 int main() {
 
   test_coordinates();
@@ -393,6 +414,8 @@ int main() {
   test_possible_diagonal_capture_bottom_right();
   test_possible_diagonal_capture_bottom_left();
   test_possible_diagonal_capture_top_right();
+
+  test_evaluation();
 
   return EXIT_SUCCESS;
 }

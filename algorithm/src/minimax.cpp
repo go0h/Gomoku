@@ -12,7 +12,7 @@ MakeTurn* Gomoku::minimax() {
 
 	double low = MINUS_INF;
 
-  t_move_eval best_move = possible_moves[0];
+  t_move_eval best_move = { low, 0, 0 };
 
 
   for (t_move_eval move: possible_moves) {
@@ -20,6 +20,10 @@ MakeTurn* Gomoku::minimax() {
     _set_move_and_catch(_board, _difficult, move.x, move.y, _player);
 
     best_move = minimax(_board, _difficult - 1, opponent, _player, low, PLUS_INF);
+
+    if (_depth_state[_difficult].depth_catches.size()) {
+      best_move.score += 10000;
+    }
 
     _remove_move_and_catches(_board, _difficult, move.x, move.y, _player);
 
@@ -48,20 +52,19 @@ MakeTurn* Gomoku::minimax() {
   return m;
 }
 
+
 /** MINIMAX with AlphaBetta */
 Gomoku::t_move_eval Gomoku::minimax(Board& state, size_t depth, t_color player, t_color opponent, double low, double high) {
 
   t_possible_moves& possible_moves = _get_possible_moves(depth, player);
 
-  double best_score = evaluate_state(state, player);
+  double best_score = evaluate_state(state, depth, player, opponent);
 
   t_move_eval best = { best_score, 0, 0 };
 
   if (!depth || possible_moves.empty()) {
     return best;
   }
-
-  best = possible_moves[0];
 
   for (t_move_eval move: possible_moves) {
 
@@ -80,4 +83,50 @@ Gomoku::t_move_eval Gomoku::minimax(Board& state, size_t depth, t_color player, 
       return best;
   }
   return best;
+}
+
+
+void Gomoku::_set_move_and_catch(Board& state, size_t depth, size_t x, size_t y, t_color player) {
+
+  t_point*              field = state.getField();
+  size_t                side = state.getSide();
+  t_color               opponent = player == WHITE ? BLACK : WHITE;
+  std::vector<size_t>&  catches = _depth_state[depth].depth_catches;
+
+  catches.clear();
+  state(x, y) = player;
+
+  for (size_t i = 0; i < 8; ++i) {
+
+    size_t x_dir = DIRECTIONS[i][0];
+    size_t y_dir = DIRECTIONS[i][1];
+
+    size_t x3 = x + x_dir * 3;
+    size_t y3 = y + y_dir * 3;
+
+    if (x3 < side && y3 < side && field[y3 * side + x3] == player) {
+      size_t p2 = (y + y_dir * 2) * side + (x + x_dir * 2);
+      size_t p1 = (y + y_dir * 1) * side + (x + x_dir * 1);
+
+      if (field[p1] == opponent && field[p2] == opponent) {
+        field[p1] = EMPTY;
+        field[p2] = EMPTY;
+        catches.push_back(p1);
+        catches.push_back(p2);
+      }
+    }
+  }
+}
+
+
+void Gomoku::_remove_move_and_catches(Board& state, size_t depth, size_t x, size_t y, t_color player) {
+
+  t_point* field = state.getField();
+  t_color opponent = player == WHITE ? BLACK : WHITE;
+  std::vector<size_t>& catches = _depth_state[depth].depth_catches;
+
+  state(x, y) = EMPTY;
+  for (size_t pos: catches) {
+    field[pos] = opponent;
+  }
 }
