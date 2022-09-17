@@ -3,32 +3,45 @@
 #include <iostream>
 
 
+double get_catch_score(int n) {
+	switch (n) {
+		case 0:
+			return 40;
+		case 1:
+			return 40;
+		case 2:
+			return 40;
+		case 3:
+			return 40;
+		case 4:
+			return 1700;
+		default:
+			return 180000;
+	}
+}
+
 MakeTurn* Gomoku::minimax() {
 
   t_coord best;
+  double  low = MINUS_INF;
+  double  score = low;
   t_color opponent = (_player == WHITE ? BLACK : WHITE);
 
   t_possible_moves& possible_moves = _get_possible_moves(_difficult, _player);
-
-	double low = MINUS_INF;
-
-  t_move_eval best_move = { low, 0, 0 };
-
 
   for (t_move_eval move: possible_moves) {
 
     _set_move_and_catch(_board, _difficult, move.x, move.y, _player);
 
-    best_move = minimax(_board, _difficult - 1, opponent, _player, low, PLUS_INF);
+    score = minimax(_board, _difficult - 1, opponent, _player, low, PLUS_INF);
 
-    if (_depth_state[_difficult].depth_catches.size()) {
-      best_move.score += 10000;
-    }
+    if (_depth_state[_difficult].depth_catches.size())
+      score += get_catch_score(_captures[_player]);
 
     _remove_move_and_catches(_board, _difficult, move.x, move.y, _player);
 
-    if (best_move.score > low) {
-      low = best_move.score;
+    if (score > low) {
+      low = score;
       best = { move.x, move.y };
     }
   }
@@ -54,35 +67,44 @@ MakeTurn* Gomoku::minimax() {
 
 
 /** MINIMAX with AlphaBetta */
-Gomoku::t_move_eval Gomoku::minimax(Board& state, size_t depth, t_color player, t_color opponent, double low, double high) {
+double Gomoku::minimax(Board& state, size_t depth, t_color player, t_color opponent, double low, double high) {
+
+  bool is_win = false;
+  double best_score = evaluate_state(state, depth, player, opponent, _player == player);
+
+  if (_captures[player] >= 10) {
+    best_score += 100000;
+    is_win = true;
+  }
+
+  if (!depth || is_win)
+    return best_score;
 
   t_possible_moves& possible_moves = _get_possible_moves(depth, player);
 
-  double best_score = evaluate_state(state, depth, player, opponent);
-
-  t_move_eval best = { best_score, 0, 0 };
-
-  if (!depth || possible_moves.empty()) {
-    return best;
-  }
+  if (possible_moves.empty())
+    return best_score;
 
   for (t_move_eval move: possible_moves) {
 
     _set_move_and_catch(state, depth, move.x, move.y, player);
 
-    t_move_eval me = minimax(state, depth - 1, opponent, player, -high, -low);
+    double score = minimax(state, depth - 1, opponent, player, -high, -low);
 
-    if (-me.score > best_score) {
-      low = -me.score;
-      best = { low, move.x, move.y };
-    }
+    if (_depth_state[_difficult].depth_catches.size())
+      score += get_catch_score(_captures[_player]);
 
     _remove_move_and_catches(state, depth, move.x, move.y, player);
 
+    if (-score > low) {
+      low = -score;
+      best_score = low;
+    }
+
     if (low >= high)
-      return best;
+      return best_score;
   }
-  return best;
+  return best_score;
 }
 
 
@@ -113,6 +135,7 @@ void Gomoku::_set_move_and_catch(Board& state, size_t depth, size_t x, size_t y,
         field[p2] = EMPTY;
         catches.push_back(p1);
         catches.push_back(p2);
+        _captures[player] += 2;
       }
     }
   }
@@ -128,5 +151,6 @@ void Gomoku::_remove_move_and_catches(Board& state, size_t depth, size_t x, size
   state(x, y) = EMPTY;
   for (size_t pos: catches) {
     field[pos] = opponent;
+    _captures[player] -= 1;
   }
 }

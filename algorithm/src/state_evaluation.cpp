@@ -20,7 +20,7 @@ typedef struct s_segment_info {
 void   evaluate(t_segment_info& seg_info) {
 
   // длина сегмента = 0 или нет свободных сторон
-  if (!seg_info.sequence_len || (!seg_info.prev_seq_free && !seg_info.prev_seq_free))
+  if (seg_info.sequence_len < 5 && (!seg_info.prev_seq_free && !seg_info.prev_seq_free))
     return;
 
   switch (seg_info.sequence_len)
@@ -121,63 +121,107 @@ void   evaluate_line(t_segment_info& seg_info) {
 }
 
 
-double evaluate_diagonal(t_point* field, int side, t_color player) {
+double evaluate_diagonal(t_point* field, int side, t_color player, bool is_player_turn) {
 
-  t_segment_info  diagonale1;
-  t_segment_info  diagonale2;
-  memset(&diagonale1, 0, sizeof(t_segment_info));
-  memset(&diagonale2, 0, sizeof(t_segment_info));
+  t_segment_info  diagonale;
+  memset(&diagonale, 0, sizeof(t_segment_info));
 
-	for (int i = side - 1; i > -side; --i) {
-		int f_y = ABS(MIN(0, i));
-		int f_x = MAX(0, i);
-		for (int j = 0; j < side; ++j) {
-			if (f_y + j >= side || f_x + j >= side){
-				break;
-			}
-      int pos1 = (f_y + j) * side + (f_x + j);
-      int pos2 = (f_x + j) * side + (f_y + j);
-      evaluate_segment(diagonale1, field[pos1] == player, field[pos1] == EMPTY);
-      evaluate_segment(diagonale2, field[pos2] == player, field[pos2] == EMPTY);
-		}
-    evaluate_line(diagonale1);
-    evaluate_line(diagonale2);
-	}
-  return diagonale1.score + diagonale2.score;
+  Board b = Board(side);
+
+  for (int i = 0; i < side * 2 - 1; ++i) {
+    int f_y = MIN(i, side - 1);
+    int f_x = MAX(0, i - (side - 1));
+    for (int j = 0; j < side; ++j) {
+      // bottom-left -> top-right
+      if (f_y - j <= -1 || f_x + j >= side) {
+        break;
+      }
+      // std::cout << "pos = " << b.coord_to_pos(f_x + j, f_y - j) << std::endl;
+      int pos = (f_y - j) * side + (f_x + j);
+      evaluate_segment(diagonale, field[pos] == player, field[pos] == EMPTY);
+    }
+    // std::cout << "-------------------------------" << std::endl;
+    evaluate_line(diagonale);
+  }
+
+  double score = diagonale.score;
+  memset(&diagonale, 0, sizeof(t_segment_info));
+
+
+  for (int i = side - 1; i > -side; --i) {
+    int f_y = ABS(MIN(0, i));
+    int f_x = MAX(0, i);
+    // top-left -> bottom-right
+    for (long j = 0; j < side; ++j) {
+      if (f_y + j >= side || f_x + j >= side)
+        break;
+      // std::cout << "pos = " << b.coord_to_pos(f_x + j, f_y + j) << std::endl;
+      int pos = (f_y + j) * side + (f_x + j);
+      evaluate_segment(diagonale, field[pos] == player, field[pos] == EMPTY);
+    }
+
+    // std::cout << "-------------------------------" << std::endl;
+    evaluate_line(diagonale);
+  }
+
+  score += diagonale.score;
+
+  return is_player_turn ? score * 1.2 : score;
 }
 
 
-double evaluate_horizontal_vertical(t_point* field, size_t side, t_color player) {
+double evaluate_horizontal_vertical(t_point* field, size_t side, t_color player, bool is_player_turn) {
 
   t_segment_info  horizontal;
   t_segment_info  vertical;
   memset(&horizontal, 0, sizeof(t_segment_info));
   memset(&vertical, 0, sizeof(t_segment_info));
 
+  // Board b = Board(side);
+
   for (size_t y = 0; y < side; ++y) {
     for (size_t x = 0; x < side; ++x) {
+      // if (y == side - 1)
+      //   std::cout << "here" << std::endl;
+
       evaluate_segment(horizontal, field[y * side + x] == player, field[y * side + x] == EMPTY);
       evaluate_segment(vertical, field[x * side + y] == player, field[x * side + y] == EMPTY);
+
+      // std::cout << b.coord_to_pos(x, y) << std::endl;
     }
     evaluate_line(horizontal);
     evaluate_line(vertical);
   }
-  return horizontal.score + vertical.score;
+
+  double score = horizontal.score + vertical.score;
+
+  return is_player_turn ? score * 1.2 : score;
 }
 
 
-// TODO TEST ONLY
-double evaluate_state(Board& state, size_t depth, t_color player, t_color opponent) {
+double evaluate_state(Board& state, size_t depth, t_color player, t_color opponent, bool is_player_turn) {
 
   size_t          side = state.getSide();
   t_point*        field = state.getField();
 
   depth = depth == 3 ? 0 : 1;
 
-  double score = evaluate_horizontal_vertical(field, side, player) \
-               + evaluate_diagonal(field, side, player) \
-               - evaluate_horizontal_vertical(field, side, opponent) \
-               - evaluate_diagonal(field, side, opponent);
+  // double player_hv_score = evaluate_horizontal_vertical(field, side, player, is_player_turn);
+  // double player_d_score = evaluate_diagonal(field, side, player, is_player_turn);
+  // double opponent_hv_score = evaluate_horizontal_vertical(field, opponent, player, !is_player_turn);
+  // double opponent_d_score = evaluate_diagonal(field, side, opponent, !is_player_turn);
+
+  // std::cout << "player_hv_score: " << player_hv_score << std::endl;
+  // std::cout << "player_d_score: " << player_d_score << std::endl;
+  // std::cout << "opponent_hv_score: " << opponent_hv_score << std::endl;
+  // std::cout << "opponent_d_score: " << opponent_d_score << std::endl;
+
+  double score = evaluate_horizontal_vertical(field, side, player, is_player_turn)
+               + evaluate_diagonal(field, side, player, is_player_turn)
+               - evaluate_horizontal_vertical(field, side, opponent, !is_player_turn)
+               - evaluate_diagonal(field, side, opponent, !is_player_turn);
+
+  // double score = player_hv_score + player_d_score - opponent_hv_score - opponent_d_score;
 
   return score;
 }

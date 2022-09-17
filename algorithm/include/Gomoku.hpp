@@ -26,7 +26,7 @@ public:
   }               t_gomoku_mode;
 
   typedef enum    s_difficult {
-    EASY    = 3,
+    EASY    = 4,
     MEDIUM  = 7,
     HARD    = 11
   }               t_difficult;
@@ -58,7 +58,7 @@ public:
    *  Minimax
    */
   MakeTurn*   minimax();
-  t_move_eval minimax(Board& state, size_t depth, t_color player, t_color opponent, double low, double high);
+  double      minimax(Board& state, size_t depth, t_color player, t_color opponent, double low, double high);
 
 
 private:
@@ -113,6 +113,6 @@ private:
   std::vector<std::string> _color2str = { "", "white", "black" };
 };
 
-double evaluate_state(Board& state, size_t depth, t_color player, t_color opponent);
+double evaluate_state(Board& state, size_t depth, t_color player, t_color opponent, bool is_player_turn);
 
 #endif // GOMOKU_HPP_

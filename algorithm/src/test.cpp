@@ -10,7 +10,7 @@ size_t is_capture(t_point* field, size_t side, int x, int y, int x_dir, int y_di
 bool   is_possible_capture(t_point* field, size_t side, size_t x, size_t y, t_color player);
 bool   not_forbidden(t_point* field, size_t side, size_t x, size_t y, t_color player);
 
-double evaluate_state(Board& state, size_t depth, t_color player, t_color opponent);
+double evaluate_state(Board& state, size_t depth, t_color player, t_color opponent, bool is_player_turn);
 
 
 Board get_board_with_pieces(std::map<std::string, t_color> positions) {
@@ -378,14 +378,28 @@ void test_possible_diagonal_capture_top_right() {
 void test_evaluation() {
 
   std::map<std::string, t_color> positions = {
-    {"a1", BLACK}, {"a2", BLACK}, {"a3", BLACK}, {"a4", BLACK}, {"a5", BLACK}
+
+    // vertical
+    {"a1", BLACK}, {"a2", BLACK}, {"a3", BLACK}, {"a4", BLACK}, {"a5", BLACK},
+
+    // horizont
+    {"a1", BLACK}, {"b1", BLACK}, {"c1", BLACK}, {"d1", BLACK}, {"e1", BLACK},
+
+    // diagonal bottom left - top right
+    {"a1", BLACK}, {"b2", BLACK}, {"c3", BLACK}, {"d4", BLACK}, {"e5", BLACK},
+
+    // top-left -> bottom-right
+    {"a19", BLACK}, {"b18", BLACK}, {"c17", BLACK}, {"d16", BLACK}, {"e15", BLACK}
+
   };
 
   Board b = get_board_with_pieces(positions);
 
-  double score = evaluate_state(b, Gomoku::EASY, BLACK, WHITE);
+  double score = evaluate_state(b, Gomoku::EASY, BLACK, WHITE, true);
 
-  assert(score == 100000);
+  std::cout << score << std::endl;
+
+  assert(score > 240000);
 
   std::cout << __func__ << " - OK" << std::endl;
 }
@@ -394,26 +408,26 @@ void test_evaluation() {
 
 int main() {
 
-  test_coordinates();
+  // test_coordinates();
 
-  /* FREE THREE TESTS */
-  test_horizontal_double_three();
-  test_vertical_double_three();
-  test_diagonal_top_left__bottom_right_double_three();
-  test_diagonal_bottom_left__top_right_double_three();
-  test_forbidden_from_subject();
-  test_forbidden_diagonal_horizontal();
+  // /* FREE THREE TESTS */
+  // test_horizontal_double_three();
+  // test_vertical_double_three();
+  // test_diagonal_top_left__bottom_right_double_three();
+  // test_diagonal_bottom_left__top_right_double_three();
+  // test_forbidden_from_subject();
+  // test_forbidden_diagonal_horizontal();
 
 
-  /* CAPTURES TESTS */
-  test_possible_horizontal_capture_left();
-  test_possible_horizontal_capture_right();
-  test_possible_vertical_capture_top();
-  test_possible_vertical_capture_bottom();
-  test_possible_diagonal_capture_top_left();
-  test_possible_diagonal_capture_bottom_right();
-  test_possible_diagonal_capture_bottom_left();
-  test_possible_diagonal_capture_top_right();
+  // /* CAPTURES TESTS */
+  // test_possible_horizontal_capture_left();
+  // test_possible_horizontal_capture_right();
+  // test_possible_vertical_capture_top();
+  // test_possible_vertical_capture_bottom();
+  // test_possible_diagonal_capture_top_left();
+  // test_possible_diagonal_capture_bottom_right();
+  // test_possible_diagonal_capture_bottom_left();
+  // test_possible_diagonal_capture_top_right();
 
   test_evaluation();
 

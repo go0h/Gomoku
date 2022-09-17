@@ -6,7 +6,7 @@
 #    By: astripeb <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2020/05/31 20:08:29 by astripeb          #+#    #+#              #
-#    Updated: 2022/09/16 20:23:33 by astripeb         ###   ########.fr        #
+#    Updated: 2022/09/17 12:29:36 by astripeb         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -41,7 +41,7 @@ else
 endif
 
 ifeq ($(DEBUG), 1)
-  CXXFLAGS += -D DEBUG -g
+  CXXFLAGS += -D DEBUG -g3 #-pg
 endif
 
 vpath %.cpp		$(SRC_DIR)
