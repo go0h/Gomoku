@@ -36,7 +36,7 @@ MakeTurn* Gomoku::minimax() {
     score = minimax(_board, _difficult - 1, opponent, _player, alpha, PLUS_INF);
 
     if (_depth_state[_difficult].depth_catches.size())
-      score += get_catch_score(_captures[_player]);
+      score += get_catch_score(_depth_state[_difficult].depth_catches.size());
 
     _remove_move_and_catches(_board, _difficult, move.x, move.y, _player);
 
@@ -92,7 +92,7 @@ double Gomoku::minimax(Board& state, size_t depth, t_color player, t_color oppon
     double score = minimax(state, depth - 1, opponent, player, -betta, -alpha);
 
     if (_depth_state[_difficult].depth_catches.size()) {
-      double catch_score = get_catch_score(_captures[_player]);
+      double catch_score = get_catch_score(_depth_state[_difficult].depth_catches.size());
       score = score + (player == _player) ? catch_score : -catch_score;
     }
 

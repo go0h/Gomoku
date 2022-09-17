@@ -4,11 +4,8 @@
 #include "Board.hpp"
 #include "Gomoku.hpp"
 
-size_t get_free_three_by_dir(t_point* field, int side, int x, int y, int x_dir, int y_dir, t_color player);
 size_t get_num_of_free_threes(t_point* field, size_t side, size_t x, size_t y, t_color player);
-size_t is_capture(t_point* field, size_t side, int x, int y, int x_dir, int y_dir, t_color player);
 bool   is_possible_capture(t_point* field, size_t side, size_t x, size_t y, t_color player);
-bool   not_forbidden(t_point* field, size_t side, size_t x, size_t y, t_color player);
 
 double evaluate_state(Board& state, t_color player, t_color opponent, bool is_player_turn);
 
@@ -408,26 +405,26 @@ void test_evaluation() {
 
 int main() {
 
-  // test_coordinates();
+  test_coordinates();
 
-  // /* FREE THREE TESTS */
-  // test_horizontal_double_three();
-  // test_vertical_double_three();
-  // test_diagonal_top_left__bottom_right_double_three();
-  // test_diagonal_bottom_left__top_right_double_three();
-  // test_forbidden_from_subject();
-  // test_forbidden_diagonal_horizontal();
+  /* FREE THREE TESTS */
+  test_horizontal_double_three();
+  test_vertical_double_three();
+  test_diagonal_top_left__bottom_right_double_three();
+  test_diagonal_bottom_left__top_right_double_three();
+  test_forbidden_from_subject();
+  test_forbidden_diagonal_horizontal();
 
 
-  // /* CAPTURES TESTS */
-  // test_possible_horizontal_capture_left();
-  // test_possible_horizontal_capture_right();
-  // test_possible_vertical_capture_top();
-  // test_possible_vertical_capture_bottom();
-  // test_possible_diagonal_capture_top_left();
-  // test_possible_diagonal_capture_bottom_right();
-  // test_possible_diagonal_capture_bottom_left();
-  // test_possible_diagonal_capture_top_right();
+  /* CAPTURES TESTS */
+  test_possible_horizontal_capture_left();
+  test_possible_horizontal_capture_right();
+  test_possible_vertical_capture_top();
+  test_possible_vertical_capture_bottom();
+  test_possible_diagonal_capture_top_left();
+  test_possible_diagonal_capture_bottom_right();
+  test_possible_diagonal_capture_bottom_left();
+  test_possible_diagonal_capture_top_right();
 
   test_evaluation();
 

@@ -5,12 +5,11 @@
 # define PLUS_INF  (1.0 / 0.0)
 # define MINUS_INF (-1.0 / 0.0)
 
-extern int DIRECTIONS[8][2];
-
 #include <nlohmann/json.hpp>
 #include "Board.hpp"
 #include "gomoku_methods.hpp"
 
+extern ssize_t DIRECTIONS[8][2];
 
 class Gomoku
 {

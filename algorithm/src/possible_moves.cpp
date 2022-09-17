@@ -22,28 +22,28 @@
 using Dist = std::uniform_int_distribution<size_t>;
 
 
-int DIRECTIONS[8][2] = {
+long DIRECTIONS[8][2] = {
 	{-1, -1 }, { 0, -1 }, { 1, -1 },
 	{-1,  0 }, /*  X  */  { 1,  0 },
 	{-1,  1 }, { 0,  1 }, { 1,  1 },
 };
 
 
-int64_t FREE_THREE[3][3] = {
+long FREE_THREE[3][3] = {
   {   5  ,    6  ,   6    },
   { _WWW_, _W_WW_, _WW_W_ },
   { _BBB_, _B_BB_, _BB_B_ }
 };
 
 
-int32_t CATCHES[3][2] = {
+long CATCHES[3][2] = {
   {  0,     0  },
   { BW_B, B_WB },
   { W_BW, WB_W }
 };
 
 //TODO optimize
-size_t get_free_three_by_dir(t_point* field, int side, int x, int y, int x_dir, int y_dir, t_color player) {
+size_t get_free_three_by_dir(t_point* field, long side, long x, long y, long x_dir, long y_dir, t_color player) {
 
   size_t three_num = 0;
 
@@ -51,14 +51,14 @@ size_t get_free_three_by_dir(t_point* field, int side, int x, int y, int x_dir, 
 
     size_t pattern = FREE_THREE[player][p_num];
 
-    for (int i = 1; i < FREE_THREE[0][p_num]; ++i) {
-        int is_free_tree = 1;
-        int x_p = x - i * x_dir;
-        int y_p = y - i * y_dir;
+    for (long i = 1; i < FREE_THREE[0][p_num]; ++i) {
+        long is_free_tree = 1;
+        long x_p = x - i * x_dir;
+        long y_p = y - i * y_dir;
 
-      for (int j = 0; j < FREE_THREE[0][p_num]; ++j) {
-        int x_ = x_p + j * x_dir;
-        int y_ = y_p + j * y_dir;
+      for (long j = 0; j < FREE_THREE[0][p_num]; ++j) {
+        long x_ = x_p + j * x_dir;
+        long y_ = y_p + j * y_dir;
         t_point pp = (pattern >> (j * 8)) & 0xFF;
 
         if (x_ > -1 && x_ < side && y_ > -1 && y_ < side && field[y_ * side + x_] == pp) {
@@ -105,7 +105,7 @@ size_t get_num_of_free_threes(t_point* field, size_t side, size_t x, size_t y, t
 }
 
 
-size_t is_capture(t_point* field, size_t side, int x, int y, int x_dir, int y_dir, t_color player) {
+size_t is_capture(t_point* field, size_t side, long x, long y, long x_dir, long y_dir, t_color player) {
 
   for (size_t j = 0; j < 2; ++j) {
 
@@ -163,12 +163,12 @@ double pre_evaluate_step(t_point* field, size_t side, size_t x, size_t y, t_colo
 
 	double score = 0.0;
 
-	for (int i = 0; i < 8; ++i) {
+	for (long i = 0; i < 8; ++i) {
 
     size_t _x = x;
 	  size_t _y = y;
-		int x_dir = DIRECTIONS[i][0];
-		int y_dir = DIRECTIONS[i][1];
+		long x_dir = DIRECTIONS[i][0];
+		long y_dir = DIRECTIONS[i][1];
 
     size_t points_in_row = 0;
 
@@ -218,13 +218,13 @@ Gomoku::t_possible_moves& Gomoku::_get_possible_moves(size_t depth, t_color play
   for (size_t y = 0; y < side; ++y) {
     for (size_t x = 0; x < side; ++x) {
 
-      if (_board(x, y) != EMPTY)
+      if (field[y * side + x] != EMPTY)
         continue;
 
       for (size_t i = 0; i < 8; ++i) {
         size_t _x = x + DIRECTIONS[i][0];
         size_t _y = y + DIRECTIONS[i][1];
-        if (_x < side && _y < side && _board(_x, _y) != EMPTY) {
+        if (_x < side && _y < side && field[_y * side + _x] != EMPTY) {
           if (not_forbidden(field, side, x, y, player)) {
             double score = pre_evaluate_step(field, side, x, y, player);
             pm.push_back({ score, x, y});
@@ -234,9 +234,8 @@ Gomoku::t_possible_moves& Gomoku::_get_possible_moves(size_t depth, t_color play
       }
     }
   }
-  if (pm.empty()) {
+  if (pm.empty())
     pm.push_back(get_random_move(field, side, player));
-  }
 
   std::sort(pm.begin(), pm.end(), compare_moves);
   return pm;
