@@ -10,7 +10,7 @@ size_t is_capture(t_point* field, size_t side, int x, int y, int x_dir, int y_di
 bool   is_possible_capture(t_point* field, size_t side, size_t x, size_t y, t_color player);
 bool   not_forbidden(t_point* field, size_t side, size_t x, size_t y, t_color player);
 
-double evaluate_state(Board& state, size_t depth, t_color player, t_color opponent, bool is_player_turn);
+double evaluate_state(Board& state, t_color player, t_color opponent, bool is_player_turn);
 
 
 Board get_board_with_pieces(std::map<std::string, t_color> positions) {
@@ -395,11 +395,11 @@ void test_evaluation() {
 
   Board b = get_board_with_pieces(positions);
 
-  double score = evaluate_state(b, Gomoku::EASY, BLACK, WHITE, true);
+  double score = evaluate_state(b, BLACK, WHITE, true);
+  assert(score > 480000);
 
-  std::cout << score << std::endl;
-
-  assert(score > 240000);
+  score = evaluate_state(b, WHITE, BLACK, true);
+  assert(score < -400000);
 
   std::cout << __func__ << " - OK" << std::endl;
 }

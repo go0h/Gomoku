@@ -2,6 +2,7 @@
 #define MAX(x,y) (((x) >= (y)) ? (x) : (y))
 #define MIN(x,y) (((x) <= (y)) ? (x) : (y))
 #define ABS(x)   (((x) <= (0)) ? (-x) : (x))
+#define NEXT_MOVE_COEF  1.5
 
 #include <iostream>
 #include <random>
@@ -17,7 +18,7 @@ typedef struct s_segment_info {
 }             t_segment_info;
 
 
-void   evaluate(t_segment_info& seg_info) {
+void   evaluate(t_segment_info& seg_info, bool is_player_turn) {
 
   // длина сегмента = 0 или нет свободных сторон
   if (seg_info.sequence_len < 5 && (!seg_info.prev_seq_free && !seg_info.prev_seq_free))
@@ -27,45 +28,45 @@ void   evaluate(t_segment_info& seg_info) {
   {
   case 4:
     if (seg_info.prev_seq_free && seg_info.prev_seq_free) // с двух сторон свободное место
-      seg_info.score += 10000;
+      seg_info.score += (is_player_turn ? 20000 : 10000);
     else                                                  // с одной стороны свободное место
-      seg_info.score += 2000;
+      seg_info.score += (is_player_turn ? 10000 : 5000);
     return;
   case 3:
     // с двух сторон свободное место, и сумма > 2
     if (seg_info.prev_seq_free > 0 && seg_info.post_seq_free > 0 && \
-       (seg_info.prev_seq_free + seg_info.post_seq_free > 2)) {
-      seg_info.score += 2000;
+       (seg_info.prev_seq_free + seg_info.post_seq_free) > 2) {
+      seg_info.score += (is_player_turn ? 4000 : 2000);
     }
     // с двух сторон по одной свободной клетке
     else if (seg_info.prev_seq_free > 0 && seg_info.post_seq_free > 0) {
-      seg_info.score += 1500;
+      seg_info.score += (is_player_turn ? 2000 : 1500);
     }
     // с одной стороны свободного места нет
     else {
-      seg_info.score += 1000;
+      seg_info.score += (is_player_turn ? 1250 : 1000);
     }
     return;
   case 2:
     // с двух сторон свободное место, и сумма > 3
     if (seg_info.prev_seq_free > 0 && seg_info.post_seq_free > 0 && \
-       (seg_info.prev_seq_free + seg_info.post_seq_free > 3)) {
-      seg_info.score += 250;
+       (seg_info.prev_seq_free + seg_info.post_seq_free) > 3) {
+      seg_info.score += (is_player_turn ? 250 : 200);
     }
     // с двух сторон по одной свободной клетке
     else if (seg_info.prev_seq_free > 0 && seg_info.post_seq_free > 0) {
-      seg_info.score += 150;
+      seg_info.score += (is_player_turn ? 180 : 150);
     }
     // с одной стороны свободного места нет
     else {
-      seg_info.score += 75;
+      seg_info.score += (is_player_turn ? 80 : 75);
     }
     return;
   case 1:
     // с двух сторон свободное место, и сумма > 3
     if (seg_info.prev_seq_free > 0 && seg_info.post_seq_free > 0 && \
        (seg_info.prev_seq_free + seg_info.post_seq_free > 4)) {
-      seg_info.score += 25;
+      seg_info.score += (is_player_turn ? 25 : 15);;
     }
     // с двух сторон по одной свободной клетке
     else if (seg_info.prev_seq_free > 0 && seg_info.post_seq_free > 0) {
@@ -84,7 +85,7 @@ void   evaluate(t_segment_info& seg_info) {
 }
 
 
-void   evaluate_segment(t_segment_info& seg_info, bool is_player, bool is_empty) {
+void   evaluate_segment(t_segment_info& seg_info, bool is_player, bool is_empty, bool is_player_turn) {
 
   if (is_empty && !seg_info.sequence_len) {
     ++seg_info.prev_seq_free;
@@ -98,7 +99,7 @@ void   evaluate_segment(t_segment_info& seg_info, bool is_player, bool is_empty)
   else if (!is_player) {
 
     if (seg_info.sequence_len)
-      evaluate(seg_info);
+      evaluate(seg_info, is_player_turn);
 
     seg_info.total_free += seg_info.prev_seq_free + seg_info.post_seq_free;
     seg_info.prev_seq_free = 0;
@@ -108,10 +109,10 @@ void   evaluate_segment(t_segment_info& seg_info, bool is_player, bool is_empty)
 }
 
 
-void   evaluate_line(t_segment_info& seg_info) {
+void   evaluate_line(t_segment_info& seg_info, bool is_player_turn) {
 
   if (seg_info.sequence_len)
-    evaluate(seg_info);
+    evaluate(seg_info, is_player_turn);
 
   seg_info.total_free += seg_info.prev_seq_free + seg_info.post_seq_free;
   seg_info.prev_seq_free = 0;
@@ -138,10 +139,10 @@ double evaluate_diagonal(t_point* field, int side, t_color player, bool is_playe
       }
       // std::cout << "pos = " << b.coord_to_pos(f_x + j, f_y - j) << std::endl;
       int pos = (f_y - j) * side + (f_x + j);
-      evaluate_segment(diagonale, field[pos] == player, field[pos] == EMPTY);
+      evaluate_segment(diagonale, field[pos] == player, field[pos] == EMPTY, is_player_turn);
     }
     // std::cout << "-------------------------------" << std::endl;
-    evaluate_line(diagonale);
+    evaluate_line(diagonale, is_player_turn);
   }
 
   double score = diagonale.score;
@@ -157,16 +158,16 @@ double evaluate_diagonal(t_point* field, int side, t_color player, bool is_playe
         break;
       // std::cout << "pos = " << b.coord_to_pos(f_x + j, f_y + j) << std::endl;
       int pos = (f_y + j) * side + (f_x + j);
-      evaluate_segment(diagonale, field[pos] == player, field[pos] == EMPTY);
+      evaluate_segment(diagonale, field[pos] == player, field[pos] == EMPTY, is_player_turn);
     }
 
     // std::cout << "-------------------------------" << std::endl;
-    evaluate_line(diagonale);
+    evaluate_line(diagonale, is_player_turn);
   }
 
   score += diagonale.score;
 
-  return is_player_turn ? score * 1.2 : score;
+  return score;
 }
 
 
@@ -184,27 +185,25 @@ double evaluate_horizontal_vertical(t_point* field, size_t side, t_color player,
       // if (y == side - 1)
       //   std::cout << "here" << std::endl;
 
-      evaluate_segment(horizontal, field[y * side + x] == player, field[y * side + x] == EMPTY);
-      evaluate_segment(vertical, field[x * side + y] == player, field[x * side + y] == EMPTY);
+      evaluate_segment(horizontal, field[y * side + x] == player, field[y * side + x] == EMPTY, is_player_turn);
+      evaluate_segment(vertical, field[x * side + y] == player, field[x * side + y] == EMPTY, is_player_turn);
 
       // std::cout << b.coord_to_pos(x, y) << std::endl;
     }
-    evaluate_line(horizontal);
-    evaluate_line(vertical);
+    evaluate_line(horizontal, is_player_turn);
+    evaluate_line(vertical, is_player_turn);
   }
 
   double score = horizontal.score + vertical.score;
 
-  return is_player_turn ? score * 1.2 : score;
+  return score;
 }
 
 
-double evaluate_state(Board& state, size_t depth, t_color player, t_color opponent, bool is_player_turn) {
+double evaluate_state(Board& state, t_color player, t_color opponent, bool is_player_turn) {
 
   size_t          side = state.getSide();
   t_point*        field = state.getField();
-
-  depth = depth == 3 ? 0 : 1;
 
   // double player_hv_score = evaluate_horizontal_vertical(field, side, player, is_player_turn);
   // double player_d_score = evaluate_diagonal(field, side, player, is_player_turn);

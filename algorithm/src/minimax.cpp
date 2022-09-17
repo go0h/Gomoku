@@ -7,13 +7,13 @@ double get_catch_score(int n) {
 	switch (n) {
 		case 0:
 			return 40;
-		case 1:
-			return 40;
 		case 2:
 			return 40;
-		case 3:
-			return 40;
 		case 4:
+			return 40;
+		case 6:
+			return 40;
+		case 8:
 			return 1700;
 		default:
 			return 180000;
@@ -23,8 +23,8 @@ double get_catch_score(int n) {
 MakeTurn* Gomoku::minimax() {
 
   t_coord best;
-  double  low = MINUS_INF;
-  double  score = low;
+  double  alpha = MINUS_INF;
+  double  score = alpha;
   t_color opponent = (_player == WHITE ? BLACK : WHITE);
 
   t_possible_moves& possible_moves = _get_possible_moves(_difficult, _player);
@@ -33,15 +33,15 @@ MakeTurn* Gomoku::minimax() {
 
     _set_move_and_catch(_board, _difficult, move.x, move.y, _player);
 
-    score = minimax(_board, _difficult - 1, opponent, _player, low, PLUS_INF);
+    score = minimax(_board, _difficult - 1, opponent, _player, alpha, PLUS_INF);
 
     if (_depth_state[_difficult].depth_catches.size())
       score += get_catch_score(_captures[_player]);
 
     _remove_move_and_catches(_board, _difficult, move.x, move.y, _player);
 
-    if (score > low) {
-      low = score;
+    if (-score > alpha) {
+      alpha = -score;
       best = { move.x, move.y };
     }
   }
@@ -67,14 +67,14 @@ MakeTurn* Gomoku::minimax() {
 
 
 /** MINIMAX with AlphaBetta */
-double Gomoku::minimax(Board& state, size_t depth, t_color player, t_color opponent, double low, double high) {
+double Gomoku::minimax(Board& state, size_t depth, t_color player, t_color opponent, double alpha, double betta) {
 
   bool is_win = false;
-  double best_score = evaluate_state(state, depth, player, opponent, _player == player);
+  double best_score = evaluate_state(state, player, opponent, _player == player);
 
   if (_captures[player] >= 10) {
-    best_score += 100000;
     is_win = true;
+    best_score = (player == _player) ? 100000 : -100000;
   }
 
   if (!depth || is_win)
@@ -89,19 +89,21 @@ double Gomoku::minimax(Board& state, size_t depth, t_color player, t_color oppon
 
     _set_move_and_catch(state, depth, move.x, move.y, player);
 
-    double score = minimax(state, depth - 1, opponent, player, -high, -low);
+    double score = minimax(state, depth - 1, opponent, player, -betta, -alpha);
 
-    if (_depth_state[_difficult].depth_catches.size())
-      score += get_catch_score(_captures[_player]);
+    if (_depth_state[_difficult].depth_catches.size()) {
+      double catch_score = get_catch_score(_captures[_player]);
+      score = score + (player == _player) ? catch_score : -catch_score;
+    }
 
     _remove_move_and_catches(state, depth, move.x, move.y, player);
 
-    if (-score > low) {
-      low = -score;
-      best_score = low;
+    if (-score > alpha) {
+      alpha = -score;
+      best_score = alpha;
     }
 
-    if (low >= high)
+    if (alpha >= betta)
       return best_score;
   }
   return best_score;
