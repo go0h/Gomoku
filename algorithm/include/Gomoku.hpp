@@ -94,6 +94,8 @@ private:
   t_depth_state*                _depth_state;
   int                           _captures[3] = { 0, 0, 0 };
 
+  std::map<size_t, double>      _score_states;
+
   std::map<std::string, method> _commands =
   {
     {"back",        &Gomoku::_back},
@@ -112,6 +114,6 @@ private:
   std::vector<std::string> _color2str = { "", "white", "black" };
 };
 
-double evaluate_state(Board& state, t_color player, t_color opponent, bool is_player_turn);
+double evaluate_state(Board& state, size_t& is_win, t_color player, bool is_player_turn);
 
 #endif // GOMOKU_HPP_

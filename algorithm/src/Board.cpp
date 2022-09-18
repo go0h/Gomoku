@@ -165,7 +165,7 @@ size_t    Board::getHash() const
   size_t pow = 31;
   for (size_t i = 0; i != (_side * _side); ++i)
   {
-    hash = hash + (_field[i] * pow);
+    hash = hash + ((_field[i] + i) * pow);
     pow *= 31;
   }
   return hash;

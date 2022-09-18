@@ -13,9 +13,10 @@ Gomoku::Gomoku() :
 {
   _depth_state = new t_depth_state[_difficult + 1];
 
+  _score_states = std::map<size_t, double>();
+
   for (size_t i = 0; i <= _difficult; ++i) {
     _depth_state[i].poss_moves.reserve(_board.getSide() * _board.getSide());
-    // _depth_state[i].depth_catches.reserve(_board.getSide() * _board.getSide());
   }
 
 }
@@ -28,6 +29,8 @@ Gomoku::Gomoku(t_gomoku_mode mode, t_color color, t_difficult difficult, size_t 
   _board(Board(board_size))
 {
   _depth_state = new t_depth_state[_difficult + 1];
+
+  _score_states = std::map<size_t, double>();
 
   for (size_t i = 0; i <= _difficult; ++i) {
     _depth_state[i].poss_moves.reserve(_board.getSide() * _board.getSide());
@@ -78,7 +81,6 @@ MethodArgs::pointer Gomoku::_start_game(MethodArgs::pointer args) {
 
   for (size_t i = 0; i <= _difficult; ++i) {
     _depth_state[i].poss_moves.reserve(_board.getSide() * _board.getSide());
-    // _depth_state[i].depth_catches.reserve(_board.getSide() * _board.getSide());
   }
 
   #ifdef DEBUG

@@ -68,21 +68,21 @@ MakeTurn* Gomoku::minimax() {
 /** MINIMAX with AlphaBetta */
 double Gomoku::minimax(Board& state, size_t depth, t_color player, t_color opponent, double alpha, double betta) {
 
-  bool is_win = false;
-  double best_score = evaluate_state(state, player, opponent, _player == player);
+  size_t is_win = 0;
+  alpha = evaluate_state(state, is_win, player, _player == player);
 
   if (_captures[player] >= 10) {
-    is_win = true;
-    best_score = -100000;
+    is_win = 1;
+    alpha += 120000;
   }
 
-  if (!depth || is_win)
-    return best_score;
+  if (depth <= 0 || is_win)
+    return alpha;
 
   t_possible_moves& possible_moves = _get_possible_moves(depth, player);
 
   if (possible_moves.empty())
-    return best_score;
+    return alpha;
 
   for (t_move_eval move: possible_moves) {
 
@@ -91,21 +91,18 @@ double Gomoku::minimax(Board& state, size_t depth, t_color player, t_color oppon
     double score = minimax(state, depth - 1, opponent, player, -betta, -alpha);
 
     if (_depth_state[_difficult].depth_catches.size()) {
-      double catch_score = get_catch_score(_depth_state[_difficult].depth_catches.size());
-      score = score + (player == _player) ? catch_score : -catch_score;
+      score += get_catch_score(_depth_state[_difficult].depth_catches.size());
     }
 
     _remove_move_and_catches(state, depth, move.x, move.y, player);
 
-    if (-score > alpha) {
+    if (-score > alpha)
       alpha = -score;
-      best_score = alpha;
-    }
 
     if (alpha >= betta)
-      return best_score;
+      return alpha;
   }
-  return best_score;
+  return alpha;
 }
 
 
