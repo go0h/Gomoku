@@ -6,15 +6,15 @@
 double get_catch_score(int n) {
 	switch (n) {
 		case 0:
-			return 40;
+			return 0;
 		case 2:
 			return 40;
 		case 4:
-			return 40;
+			return 500;
 		case 6:
-			return 40;
+			return 1000;
 		case 8:
-			return 1700;
+			return 2000;
 		default:
 			return 180000;
 	}
@@ -59,7 +59,6 @@ MakeTurn* Gomoku::minimax() {
   }
   for (size_t pos: _depth_state[_difficult].depth_catches) {
     std::string capture = _board.coord_to_pos(pos % _board.getSide(), pos / _board.getSide());
-    std::cout << capture << std::endl;
     m->captures.push_back(capture);
   }
   return m;
@@ -74,7 +73,7 @@ double Gomoku::minimax(Board& state, size_t depth, t_color player, t_color oppon
 
   if (_captures[player] >= 10) {
     is_win = true;
-    best_score = (player == _player) ? 100000 : -100000;
+    best_score = -100000;
   }
 
   if (!depth || is_win)

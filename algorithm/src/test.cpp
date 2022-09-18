@@ -393,9 +393,11 @@ void test_evaluation() {
   Board b = get_board_with_pieces(positions);
 
   double score = evaluate_state(b, BLACK, WHITE, true);
-  assert(score > 480000);
+  std::cout << score << std::endl;
+  assert(score >= 400000);
 
   score = evaluate_state(b, WHITE, BLACK, true);
+  std::cout << score << std::endl;
   assert(score < -400000);
 
   std::cout << __func__ << " - OK" << std::endl;
