@@ -142,7 +142,6 @@ MethodArgs::pointer Gomoku::_make_turn(MethodArgs::pointer args) {
   _board(move->position) = _player;
   for (std::string& capture : move->captures) {
     _board(capture) = EMPTY;
-    _captures[_player] += 1;
   }
 
   return MethodArgs::pointer(move);

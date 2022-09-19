@@ -1,33 +1,33 @@
 
 // SIX
-#define _WWWW_ 0b000101010100
-#define _WWWWB 0b000101010110
-#define BWWWW_ 0b100101010100
-#define _W_WW_ 0b000100010100
-#define _WW_W_ 0b000101000100
+#define _WWWW_ 0b000101010100    // 20000 (15000)
+#define _WWWWB 0b000101010110    // 15000 (5000)
+#define BWWWW_ 0b100101010100    // 15000 (5000)
+#define _W_WW_ 0b000100010100    // 7250  (2500)
+#define _WW_W_ 0b000101000100    // 7250  (2500)
 
 // FIVE WITH SHIFT 2 BITS
-#define WWWWW  0b0101010101
-#define W_WWW  0b0100010101
-#define WWW_W  0b0101010001
-#define WW_WW  0b0101000101
-#define W_W_W  0b0100010001
+#define WWWWW  0b0101010101      // 100000
+#define W_WWW  0b0100010101      // 20000 (7500)
+#define WWW_W  0b0101010001      // 20000 (7500)
+#define WW_WW  0b0101000101      // 20000 (7500)
+#define W_W_W  0b0100010001      // 3500  (1500)
 
 // FIVE
-#define _WWW_  0b0001010100
-#define BWWW_  0b1001010100
-#define _WWWB  0b0001010110
-#define _W_W_  0b0001000100
+#define _WWW_  0b0001010100      // 4000  (2000)
+#define BWWW_  0b1001010100      // 2000  (1500)
+#define _WWWB  0b0001010110      // 2000  (1500)
+#define _W_W_  0b0001000100      // 1000  (500)
 
 // FOUR
-#define _WW_   0b00010100
-#define BWW_   0b10010100
-#define _WWB   0b00010110
+#define _WW_   0b00010100        // 250   (200)
+#define BWW_   0b10010100        // 80    (75)
+#define _WWB   0b00010110        // 80    (75)
 
 // THREE
-#define _W_    0b000100
-#define BW_    0b100100
-#define _WB    0b000110
+#define _W_    0b000100          // 25    (15)
+#define BW_    0b100100          // 10
+#define _WB    0b000110          // 10
 
 #define PLAYER   0b01
 #define OPPONENT 0b10
@@ -46,13 +46,13 @@ static long evaluate(long line, size_t& is_win, bool is_player_turn) {
   case _WWWW_:
     return is_player_turn ? 20000 : 15000;
   case _WWWWB:
-    return is_player_turn ? 15000 : 5000;
+    return is_player_turn ? 15000 : 7500;
   case BWWWW_:
-    return is_player_turn ? 15000 : 5000;
+    return is_player_turn ? 15000 : 7500;
   case _W_WW_:
-    return is_player_turn ? 10000 : 2500;
+    return is_player_turn ? 7250 : 2500;
   case _WW_W_:
-    return is_player_turn ? 10000 : 2500;
+    return is_player_turn ? 7250 : 2500;
   default:
     break;
   }
@@ -61,16 +61,16 @@ static long evaluate(long line, size_t& is_win, bool is_player_turn) {
   switch ((line >> SHIFT) & 0b1111111111)
   {
   case WWWWW:
-    is_win = is_player_turn ? 1 : 0;
+    is_win = 1; // is_player_turn ? 1 : 0;
     return 100000;
   case W_WWW:
-    return is_player_turn ? 20000 : 2500;
+    return is_player_turn ? 20000 : 3500;
   case WWW_W:
-    return is_player_turn ? 20000 : 2500;
+    return is_player_turn ? 20000 : 3500;
   case WW_WW:
-    return is_player_turn ? 20000 : 2500;
+    return is_player_turn ? 20000 : 3500;
   case W_W_W:
-    return is_player_turn ? 5000 : 1500;
+    return is_player_turn ? 3500 : 1500;
   default:
     break;
   }
@@ -85,9 +85,9 @@ static long evaluate(long line, size_t& is_win, bool is_player_turn) {
   case _WWWB:
     return is_player_turn ? 2000 : 1500;
   case WW_WW:
-    return is_player_turn ? 20000 : 2500;
+    return is_player_turn ? 20000 : 3500;
   case W_W_W:
-    return is_player_turn ? 10000 : 5000;
+    return is_player_turn ? 3500 : 2000;
   case _W_W_:
     return is_player_turn ? 1000 : 500;
   default:

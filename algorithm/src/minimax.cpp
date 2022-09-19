@@ -41,7 +41,6 @@ MakeTurn* Gomoku::minimax() {
     if (_depth_state[_difficult].num_captures)
       score += get_catch_score(_captures[_player]);
 
-
     _remove_move_and_captures(_board, _difficult, move.x, move.y, _player);
 
     if (-score > alpha) {
@@ -69,7 +68,7 @@ double Gomoku::minimax(Board& state, size_t depth, t_color player, t_color oppon
   if (!depth || is_win)
     return alpha;
 
-  t_move_eval* possible_moves = _get_possible_moves(depth, _player);
+  t_move_eval* possible_moves = _get_possible_moves(depth, player);
   size_t       num_moves = _depth_state[depth].num_moves;
 
   if (!num_moves)
@@ -84,7 +83,7 @@ double Gomoku::minimax(Board& state, size_t depth, t_color player, t_color oppon
     double score = minimax(state, depth - 1, opponent, player, -betta, -alpha);
 
     if (_depth_state[depth].num_captures)
-      score += get_catch_score(_captures[_player]);
+      score += get_catch_score(_captures[player]);
 
     _remove_move_and_captures(state, depth, move.x, move.y, player);
 
@@ -108,7 +107,7 @@ void Gomoku::_set_move_and_catch(Board& state, size_t depth, size_t x, size_t y,
 
   state(x, y) = player;
 
-  for (size_t i = 0; i < 8; ++i) {
+  for (size_t i = 0; i != 8; ++i) {
 
     size_t x_dir = DIRECTIONS[i][0];
     size_t y_dir = DIRECTIONS[i][1];
@@ -170,6 +169,6 @@ MakeTurn* Gomoku::_create_turn(t_coord best_move) {
 
     m->captures.push_back(_board.coord_to_pos(x, y));
   }
-
+  _depth_state[_difficult].num_captures = 0;
   return m;
 }

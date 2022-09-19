@@ -403,7 +403,34 @@ void test_evaluation() {
   score = evaluate_state(b, is_win, WHITE, true);
   std::cout << score << std::endl;
   assert(score < -400000);
-  assert(is_win == 0);
+  assert(is_win == 1);
+
+  std::cout << __func__ << " - OK" << std::endl;
+}
+
+
+void test_evaluation_2() {
+
+  size_t is_win = 0;
+
+  std::map<std::string, t_color> positions = {
+
+    // vertical
+    {"a11", BLACK}, {"b10", BLACK}, {"c9", BLACK}, {"d8", BLACK}, {"e7", BLACK}
+  };
+
+  Board b = get_board_with_pieces(positions);
+
+  double score = evaluate_state(b, is_win, BLACK, true);
+  std::cout << score << std::endl;
+  assert(score >= 100000);
+  assert(is_win == 1);
+
+  is_win = 0;
+  score = evaluate_state(b, is_win, WHITE, true);
+  std::cout << score << std::endl;
+  assert(score < -100000);
+  assert(is_win == 1);
 
   std::cout << __func__ << " - OK" << std::endl;
 }
@@ -434,6 +461,7 @@ int main() {
   test_possible_diagonal_capture_top_right();
 
   test_evaluation();
+  test_evaluation_2();
 
   return EXIT_SUCCESS;
 }

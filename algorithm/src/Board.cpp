@@ -12,11 +12,11 @@ Board::Board(size_t side) :
   _score(0),
   _side(side)
 {
-    memset(_field, 0, sizeof(t_point) * _side * _side);
+  memset(_field, 0, sizeof(t_point) * _side * _side);
 }
 
-Board::Board(Board const & src)
-  : _field(new t_point[src._side * src._side]),
+Board::Board(Board const& src) :
+  _field(new t_point[src._side * src._side]),
   _score(src._score),
   _side(src._side)
 {

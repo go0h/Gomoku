@@ -175,7 +175,7 @@ double pre_evaluate_step(t_point* field, size_t side, size_t x, size_t y, t_colo
     for (;;) {
 			_x += x_dir;
 			_y += y_dir;
-			if (_x < side &&  _y < side && field[_y * side + x] == player)
+			if (_x < side &&  _y < side && field[_y * side + _x] == player)
 				points_in_row = (points_in_row + 1) * 2;
 			else
 				break;
