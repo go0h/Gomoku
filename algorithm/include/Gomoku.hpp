@@ -37,13 +37,12 @@ public:
     size_t    y;
   }               t_move_eval;
 
-  using t_possible_moves = std::vector<t_move_eval>;
-
   typedef struct  s_depth_state
   {
-    t_possible_moves      poss_moves;
+    t_move_eval*          poss_moves;
     size_t                num_moves;
-    std::vector<size_t>   depth_catches;
+    size_t*               depth_catches;
+    size_t                num_catches;
   }               t_depth_state;
 
   Gomoku();
@@ -75,7 +74,7 @@ private:
   /*
    *  minimax utils
    */
-  t_possible_moves& _get_possible_moves(size_t depth, t_color player);
+  t_move_eval*      _get_possible_moves(size_t depth, t_color player);
   void              _set_move_and_catch(Board& state, size_t depth, size_t x, size_t y, t_color player);
   void              _remove_move_and_catches(Board& state, size_t depth, size_t x, size_t y, t_color player);
 

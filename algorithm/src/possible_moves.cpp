@@ -47,16 +47,16 @@ size_t get_free_three_by_dir(t_point* field, long side, long x, long y, long x_d
 
   size_t three_num = 0;
 
-  for (size_t p_num = 0; p_num < 3; ++p_num) {
+  for (size_t p_num = 0; p_num != 3; ++p_num) {
 
     size_t pattern = FREE_THREE[player][p_num];
 
-    for (long i = 1; i < FREE_THREE[0][p_num]; ++i) {
+    for (long i = 1; i != FREE_THREE[0][p_num]; ++i) {
         long is_free_tree = 1;
         long x_p = x - i * x_dir;
         long y_p = y - i * y_dir;
 
-      for (long j = 0; j < FREE_THREE[0][p_num]; ++j) {
+      for (long j = 0; j != FREE_THREE[0][p_num]; ++j) {
         long x_ = x_p + j * x_dir;
         long y_ = y_p + j * y_dir;
         t_point pp = (pattern >> (j * 8)) & 0xFF;
@@ -107,11 +107,11 @@ size_t get_num_of_free_threes(t_point* field, size_t side, size_t x, size_t y, t
 
 size_t is_capture(t_point* field, size_t side, long x, long y, long x_dir, long y_dir, t_color player) {
 
-  for (size_t j = 0; j < 2; ++j) {
+  for (size_t j = 0; j != 2; ++j) {
 
     bool is_capture = true;
 
-    for (size_t i = 0; i < 4; ++i) {
+    for (size_t i = 0; i != 4; ++i) {
       size_t x_ = x + i * x_dir;
       size_t y_ = y + i * y_dir;
 
@@ -163,7 +163,7 @@ double pre_evaluate_step(t_point* field, size_t side, size_t x, size_t y, t_colo
 
 	double score = 0.0;
 
-	for (long i = 0; i < 8; ++i) {
+	for (long i = 0; i != 8; ++i) {
 
     size_t _x = x;
 	  size_t _y = y;
@@ -186,8 +186,15 @@ double pre_evaluate_step(t_point* field, size_t side, size_t x, size_t y, t_colo
 }
 
 
-bool compare_moves(Gomoku::t_move_eval& m1, Gomoku::t_move_eval& m2) {
-  return m1.score > m2.score;
+int compare_moves(const void* elem1, const void* elem2) {
+  Gomoku::t_move_eval* m1 = (Gomoku::t_move_eval*)elem1;
+  Gomoku::t_move_eval* m2 = (Gomoku::t_move_eval*)elem2;
+
+	if (m1->score < m2->score)
+    return 1;
+  else if (m1->score > m2->score)
+    return -1;
+  return 0;
 }
 
 
@@ -196,7 +203,7 @@ Gomoku::t_move_eval get_random_move(t_point* field, size_t side, t_color player)
   static std::default_random_engine re {};
   static Dist                       uid {};
 
-  for(size_t i = 0; i < side * side; ++i) {
+  for(size_t i = 0; i != side * side; ++i) {
     size_t x = uid(re, Dist::param_type{0, side - 1});
     size_t y = uid(re, Dist::param_type{0, side - 1});
 
@@ -207,16 +214,16 @@ Gomoku::t_move_eval get_random_move(t_point* field, size_t side, t_color player)
 }
 
 
-Gomoku::t_possible_moves& Gomoku::_get_possible_moves(size_t depth, t_color player) {
+Gomoku::t_move_eval* Gomoku::_get_possible_moves(size_t depth, t_color player) {
 
-  size_t side = _board.getSide();
-  t_point* field = _board.getField();
+  size_t        side = _board.getSide();
+  t_point*      field = _board.getField();
+  t_move_eval*  pm = _depth_state[depth].poss_moves;
+  size_t&       num_moves = _depth_state[depth].num_moves;
+  num_moves = 0;
 
-  t_possible_moves& pm = _depth_state[depth].poss_moves;
-  pm.clear();
-
-  for (size_t y = 0; y < side; ++y) {
-    for (size_t x = 0; x < side; ++x) {
+  for (size_t y = 0; y != side; ++y) {
+    for (size_t x = 0; x != side; ++x) {
 
       if (field[y * side + x] != EMPTY)
         continue;
@@ -227,16 +234,19 @@ Gomoku::t_possible_moves& Gomoku::_get_possible_moves(size_t depth, t_color play
         if (_x < side && _y < side && field[_y * side + _x] != EMPTY) {
           if (not_forbidden(field, side, x, y, player)) {
             double score = pre_evaluate_step(field, side, x, y, player);
-            pm.push_back({ score, x, y});
+            pm[num_moves] = { score, x, y };
+            num_moves++;
           }
           break;
         }
       }
     }
   }
-  if (pm.empty())
-    pm.push_back(get_random_move(field, side, player));
+  if (!num_moves) {
+    pm[num_moves] = get_random_move(field, side, player);
+    num_moves++;
+  }
 
-  std::sort(pm.begin(), pm.end(), compare_moves);
+  qsort(pm, num_moves, sizeof(t_move_eval), &compare_moves);
   return pm;
 }

@@ -7,7 +7,7 @@
 size_t get_num_of_free_threes(t_point* field, size_t side, size_t x, size_t y, t_color player);
 bool   is_possible_capture(t_point* field, size_t side, size_t x, size_t y, t_color player);
 
-double evaluate_state(Board& state, t_color player, t_color opponent, bool is_player_turn);
+double evaluate_state(Board& state, size_t& is_win, t_color player, bool is_player_turn);
 
 
 Board get_board_with_pieces(std::map<std::string, t_color> positions) {
@@ -374,6 +374,8 @@ void test_possible_diagonal_capture_top_right() {
 
 void test_evaluation() {
 
+  size_t is_win = 0;
+
   std::map<std::string, t_color> positions = {
 
     // vertical
@@ -392,13 +394,16 @@ void test_evaluation() {
 
   Board b = get_board_with_pieces(positions);
 
-  double score = evaluate_state(b, BLACK, WHITE, true);
+  double score = evaluate_state(b, is_win, BLACK, true);
   std::cout << score << std::endl;
   assert(score >= 400000);
+  assert(is_win == 1);
 
-  score = evaluate_state(b, WHITE, BLACK, true);
+  is_win = 0;
+  score = evaluate_state(b, is_win, WHITE, true);
   std::cout << score << std::endl;
   assert(score < -400000);
+  assert(is_win == 0);
 
   std::cout << __func__ << " - OK" << std::endl;
 }

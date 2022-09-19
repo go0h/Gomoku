@@ -11,12 +11,16 @@ Gomoku::Gomoku() :
   _difficult(EASY),
   _board(Board(19))
 {
-  _depth_state = new t_depth_state[_difficult + 1];
+  _depth_state = new t_depth_state[HARD + 1];
 
   _score_states = std::map<size_t, double>();
 
-  for (size_t i = 0; i <= _difficult; ++i) {
-    _depth_state[i].poss_moves.reserve(_board.getSide() * _board.getSide());
+  for (size_t i = 0; i <= HARD; ++i) {
+    _depth_state[i].num_moves = 0;
+    _depth_state[i].poss_moves = new t_move_eval[_board.getSide() * _board.getSide()];
+
+    _depth_state[i].num_catches = 0;
+    _depth_state[i].depth_catches = new size_t[16];
   }
 
 }
@@ -28,17 +32,27 @@ Gomoku::Gomoku(t_gomoku_mode mode, t_color color, t_difficult difficult, size_t 
   _difficult(difficult),
   _board(Board(board_size))
 {
-  _depth_state = new t_depth_state[_difficult + 1];
+  _depth_state = new t_depth_state[HARD + 1];
 
   _score_states = std::map<size_t, double>();
 
-  for (size_t i = 0; i <= _difficult; ++i) {
-    _depth_state[i].poss_moves.reserve(_board.getSide() * _board.getSide());
+  for (size_t i = 0; i <= HARD; ++i) {
+    _depth_state[i].num_moves = 0;
+    _depth_state[i].poss_moves = new t_move_eval[_board.getSide() * _board.getSide()];
+
+    _depth_state[i].num_catches = 0;
+    _depth_state[i].depth_catches = new size_t[16];
   }
 
 }
 
 Gomoku::~Gomoku() {
+
+  for (size_t i = 0; i <= HARD; ++i) {
+    delete[] _depth_state[i].poss_moves;
+    delete[] _depth_state[i].depth_catches;
+  }
+
   delete[] _depth_state;
 }
 
@@ -50,8 +64,10 @@ std::string Gomoku::process(GomokuMethod::pointer gm) {
   if (_mode == PvP)
     _switch_player();
 
-  _board.printBoard();
-  std::cout << std::endl;
+  #ifdef DEBUG
+    _board.printBoard();
+    std::cout << std::endl;
+  #endif
 
   GomokuMethod res = { gm->name, arguments };
 
@@ -74,14 +90,6 @@ MethodArgs::pointer Gomoku::_start_game(MethodArgs::pointer args) {
 
   _board = Board(st->board_size);
   memset(_captures, 0, sizeof(_captures));
-
-  delete[] _depth_state;
-
-  _depth_state = new t_depth_state[_difficult + 1];
-
-  for (size_t i = 0; i <= _difficult; ++i) {
-    _depth_state[i].poss_moves.reserve(_board.getSide() * _board.getSide());
-  }
 
   #ifdef DEBUG
     _print_config();

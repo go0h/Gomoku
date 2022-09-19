@@ -6,7 +6,7 @@
 #    By: astripeb <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2020/05/31 20:08:29 by astripeb          #+#    #+#              #
-#    Updated: 2022/09/18 21:14:19 by astripeb         ###   ########.fr        #
+#    Updated: 2022/09/19 09:54:59 by astripeb         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -53,7 +53,6 @@ all: $(NAME)
 run:
 	python3 run_gui.py
 
-test: $(NAME)
 
 $(NAME): $(OBJ)
 	$(CXX) $(CXXFLAGS) $(IFLAGS) $(addprefix $(OBJ_DIR)/,$(OBJ)) -o $@ $(LIBS)
@@ -66,8 +65,6 @@ $(OBJ):%.o:%.cpp | $(OBJ_DIR)
 $(OBJ_DIR):
 	mkdir -p $@
 
-Debug:
-	$(MAKE) CXXFLAGS="-g"
 
 include $(wildcard $(OBJ_DIR)/*.d)
 

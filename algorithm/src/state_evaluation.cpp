@@ -3,11 +3,6 @@
 #define MIN(x,y) (((x) <= (y)) ? (x)  : (y))
 #define ABS(x)   (((x) <= (0)) ? (-x) : (x))
 
-
-#include <iostream>
-#include <random>
-#include "Gomoku.hpp"
-
 // SIX
 #define _WWWW_ 0x000101010100
 #define _WWWWB 0x000101010102
@@ -38,8 +33,9 @@
 #define BW_    0x020100
 #define _WB    0x000102
 
+#include <iostream>
+#include "Gomoku.hpp"
 
-// SECOND IMPLEMENTATION
 
 static long evaluate(long line, size_t& is_win, bool is_player_turn) {
 
@@ -64,7 +60,7 @@ static long evaluate(long line, size_t& is_win, bool is_player_turn) {
   switch ((line >> 8) & 0xFFFFFFFFFF)
   {
   case WWWWW:
-    is_win = 1;
+    is_win = is_player_turn ? 1 : 0;
     return 100000;
   case W_WWW:
     return is_player_turn ? 20000 : 2500;
@@ -136,8 +132,9 @@ static long evaluate_line(long& line, size_t& is_win, bool is_player_turn) {
 
   //расчет только если предыдущая фишка была наша, а текущая нет
   if ((line & 0x0102) == 0x0102 || (line & 0x0100) == 0x0100) {
+    long score = evaluate(line, is_win, is_player_turn);
     line = 0x02;
-    return evaluate(line, is_win, is_player_turn);
+    return score;
   }
 
   // линия начинается с противника
@@ -146,11 +143,11 @@ static long evaluate_line(long& line, size_t& is_win, bool is_player_turn) {
 }
 
 
-static long evaluate_segment(long& line, size_t& is_win, bool is_player, bool is_empty, bool is_player_turn) {
+static long evaluate_segment(long& line, size_t& is_win, bool is_player, size_t point, bool is_player_turn) {
 
   line = line << 8;
 
-  if (!is_empty)
+  if (point)
     line = line | (is_player ? 0x01 : 0x02);
 
   //расчет только если предыдущая фишка была наша, а текущая нет
@@ -166,15 +163,15 @@ static long evaluate_diagonal(t_point* field, long side, size_t& is_win, t_color
   long diagonale = 0x02;
   long score     = 0;
 
-  for (long i = 0; i < side * 2 - 1; ++i) {
+  for (long i = 0; i != side * 2 - 1; ++i) {
     long f_y = MIN(i, side - 1);
     long f_x = MAX(0, i - (side - 1));
-    for (long j = 0; j < side; ++j) {
+    for (long j = 0; j != side; ++j) {
       // bottom-left -> top-right
       if (f_y - j <= -1 || f_x + j >= side)
         break;
       long pos = (f_y - j) * side + (f_x + j);
-      score += evaluate_segment(diagonale, is_win, field[pos] == player, field[pos] == EMPTY, is_player_turn);
+      score += evaluate_segment(diagonale, is_win, field[pos] == player, field[pos], is_player_turn);
     }
     score += evaluate_line(diagonale, is_win, is_player_turn);
   }
@@ -183,12 +180,12 @@ static long evaluate_diagonal(t_point* field, long side, size_t& is_win, t_color
     long f_y = ABS(MIN(0, i));
     long f_x = MAX(0, i);
     // top-left -> bottom-right
-    for (long j = 0; j < side; ++j) {
+    for (long j = 0; j != side; ++j) {
       if (f_y + j >= side || f_x + j >= side)
         break;
 
       long pos = (f_y + j) * side + (f_x + j);
-      score += evaluate_segment(diagonale, is_win, field[pos] == player, field[pos] == EMPTY, is_player_turn);
+      score += evaluate_segment(diagonale, is_win, field[pos] == player, field[pos], is_player_turn);
     }
     score += evaluate_line(diagonale, is_win, is_player_turn);
   }
@@ -203,14 +200,14 @@ static long evaluate_horizontal_vertical(t_point* field, long side, size_t& is_w
   long vertical    = 0x02;
   long score       = 0;
 
-  for (long y = 0; y < side; ++y) {
-    for (long x = 0; x < side; ++x) {
+  for (long y = 0; y != side; ++y) {
+    for (long x = 0; x != side; ++x) {
 
-      long pos1 = y * side + x;
-      long pos2 = x * side + y;
+      long pos1 = x * side + y;
+      long pos2 = y * side + x;
 
-      score += evaluate_segment(horizontal, is_win, field[pos1] == player, field[pos1] == EMPTY, is_player_turn);
-      score += evaluate_segment(vertical, is_win, field[pos2] == player, field[pos2] == EMPTY, is_player_turn);
+      score += evaluate_segment(horizontal, is_win, field[pos1] == player, field[pos1], is_player_turn);
+      score += evaluate_segment(vertical, is_win, field[pos2] == player, field[pos2], is_player_turn);
     }
     score += evaluate_line(horizontal, is_win, is_player_turn);
     score += evaluate_line(vertical, is_win, is_player_turn);
@@ -231,10 +228,10 @@ double evaluate_state(Board& state, size_t& is_win, t_color player, bool is_play
                 - evaluate_horizontal_vertical(field, side, is_win, opponent, !is_player_turn)
                 - evaluate_diagonal(field, side, is_win, opponent, !is_player_turn));
 
-  // double player_hv_score = evaluate_horizontal_vertical(field, side, player, is_player_turn);
-  // double player_d_score = evaluate_diagonal(field, side, player, is_player_turn);
-  // double opponent_hv_score = evaluate_horizontal_vertical(field, side, opponent, !is_player_turn);
-  // double opponent_d_score = evaluate_diagonal(field, side, opponent, !is_player_turn);
+  // double player_hv_score = evaluate_horizontal_vertical(field, side, is_win, player, is_player_turn);
+  // double player_d_score = evaluate_diagonal(field, side, is_win, player, is_player_turn);
+  // double opponent_hv_score = evaluate_horizontal_vertical(field, side, is_win, opponent, !is_player_turn);
+  // double opponent_d_score = evaluate_diagonal(field, side, is_win, opponent, !is_player_turn);
 
   // std::cout << "player_hv_score: " << player_hv_score << std::endl;
   // std::cout << "player_d_score: " << player_d_score << std::endl;
@@ -245,189 +242,3 @@ double evaluate_state(Board& state, size_t& is_win, t_color player, bool is_play
 
   // return score;
 }
-
-
-/* FIRST IMPLEMENTATION
-
-typedef struct s_segment_info {
-  double        score;
-  long          total_free;
-  long          prev_seq_free;
-  long          sequence_len;
-  long          post_seq_free;
-}             t_segment_info;
-
-
-static void   evaluate(t_segment_info& seg_info, bool is_player_turn) {
-
-  // длина сегмента = 0 или нет свободных сторон
-  if (seg_info.sequence_len < 5 && (!seg_info.prev_seq_free && !seg_info.prev_seq_free))
-    return;
-
-  switch (seg_info.sequence_len)
-  {
-  case 4:
-    if (seg_info.prev_seq_free && seg_info.prev_seq_free) // с двух сторон свободное место
-      seg_info.score += (is_player_turn ? 20000 : 15000);
-    else                                                  // с одной стороны свободное место
-      seg_info.score += (is_player_turn ? 15000 : 5000);
-    return;
-  case 3:
-    // с двух сторон свободное место, и сумма > 2
-    if (seg_info.prev_seq_free > 0 && seg_info.post_seq_free > 0 && \
-       (seg_info.prev_seq_free + seg_info.post_seq_free) > 2) {
-      seg_info.score += (is_player_turn ? 4000 : 2000);
-    }
-    // с двух сторон по одной свободной клетке
-    else if (seg_info.prev_seq_free > 0 && seg_info.post_seq_free > 0) {
-      seg_info.score += (is_player_turn ? 2000 : 1500);
-    }
-    // с одной стороны свободного места нет
-    else {
-      seg_info.score += (is_player_turn ? 1250 : 1000);
-    }
-    return;
-  case 2:
-    // с двух сторон свободное место, и сумма > 3
-    if (seg_info.prev_seq_free > 0 && seg_info.post_seq_free > 0 && \
-       (seg_info.prev_seq_free + seg_info.post_seq_free) > 3) {
-      seg_info.score += (is_player_turn ? 250 : 200);
-    }
-    // с двух сторон по одной свободной клетке
-    else if (seg_info.prev_seq_free > 0 && seg_info.post_seq_free > 0) {
-      seg_info.score += (is_player_turn ? 180 : 150);
-    }
-    // с одной стороны свободного места нет
-    else {
-      seg_info.score += (is_player_turn ? 80 : 75);
-    }
-    return;
-  case 1:
-    // с двух сторон свободное место, и сумма > 3
-    if (seg_info.prev_seq_free > 0 && seg_info.post_seq_free > 0 && \
-       (seg_info.prev_seq_free + seg_info.post_seq_free > 4)) {
-      seg_info.score += (is_player_turn ? 25 : 15);;
-    }
-    // с двух сторон по одной свободной клетке
-    else if (seg_info.prev_seq_free > 0 && seg_info.post_seq_free > 0) {
-      seg_info.score += 10;
-    }
-    // с одной стороны свободного места нет
-    else {
-      seg_info.score += 5;
-    }
-    return;
-  default:
-    std::cout << "Have five " << (is_player_turn ? "Player" : "Opponent") << std::endl;
-    // 5 в ряд
-    seg_info.score += 100000;
-    break;
-  }
-}
-
-
-static void   evaluate_segment(t_segment_info& seg_info, bool is_player, bool is_empty, bool is_player_turn) {
-
-  if (is_empty && !seg_info.sequence_len) {
-    ++seg_info.prev_seq_free;
-  }
-  else if (is_player) {
-    ++seg_info.sequence_len;
-  }
-  else if (is_empty) {
-    seg_info.post_seq_free++;
-  }
-  else if (!is_player) {
-
-    if (seg_info.sequence_len)
-      evaluate(seg_info, is_player_turn);
-
-    seg_info.total_free += seg_info.prev_seq_free + seg_info.post_seq_free;
-    seg_info.prev_seq_free = 0;
-    seg_info.sequence_len = 0;
-    seg_info.post_seq_free = 0;
-  }
-}
-
-
-static void   evaluate_line(t_segment_info& seg_info, bool is_player_turn) {
-
-  if (seg_info.sequence_len)
-    evaluate(seg_info, is_player_turn);
-
-  seg_info.total_free += seg_info.prev_seq_free + seg_info.post_seq_free;
-  seg_info.prev_seq_free = 0;
-  seg_info.sequence_len = 0;
-  seg_info.post_seq_free = 0;
-
-}
-
-
-static double evaluate_diagonal(t_point* field, long side, t_color player, bool is_player_turn) {
-
-  t_segment_info  diagonale = { 0, 0, 0, 0, 0 };
-
-  for (long i = 0; i < side * 2 - 1; ++i) {
-    long f_y = MIN(i, side - 1);
-    long f_x = MAX(0, i - (side - 1));
-    for (long j = 0; j < side; ++j) {
-      // bottom-left -> top-right
-      if (f_y - j <= -1 || f_x + j >= side)
-        break;
-      long pos = (f_y - j) * side + (f_x + j);
-      evaluate_segment(diagonale, field[pos] == player, field[pos] == EMPTY, is_player_turn);
-    }
-    evaluate_line(diagonale, is_player_turn);
-  }
-
-  for (long i = side - 1; i > -side; --i) {
-    long f_y = ABS(MIN(0, i));
-    long f_x = MAX(0, i);
-    // top-left -> bottom-right
-    for (long j = 0; j < side; ++j) {
-      if (f_y + j >= side || f_x + j >= side)
-        break;
-
-      long pos = (f_y + j) * side + (f_x + j);
-      evaluate_segment(diagonale, field[pos] == player, field[pos] == EMPTY, is_player_turn);
-    }
-    evaluate_line(diagonale, is_player_turn);
-  }
-
-  return diagonale.score;
-}
-
-
-double evaluate_horizontal_vertical(t_point* field, long side, t_color player, bool is_player_turn) {
-
-  t_segment_info  horizontal = { 0, 0, 0, 0, 0 };
-  t_segment_info  vertical   = { 0, 0, 0, 0, 0 };
-
-  for (long y = 0; y < side; ++y) {
-    for (long x = 0; x < side; ++x) {
-
-      long pos1 = y * side + x;
-      long pos2 = x * side + y;
-
-      evaluate_segment(horizontal, field[pos1] == player, field[pos1] == EMPTY, is_player_turn);
-      evaluate_segment(vertical, field[pos2] == player, field[pos2] == EMPTY, is_player_turn);
-    }
-    evaluate_line(horizontal, is_player_turn);
-    evaluate_line(vertical, is_player_turn);
-  }
-
-  return horizontal.score + vertical.score;
-}
-
-
-double evaluate_state(Board& state, t_color player, t_color opponent, bool is_player_turn) {
-
-  size_t   side = state.getSide();
-  t_point* field = state.getField();
-
-  return evaluate_horizontal_vertical(field, side, player, is_player_turn)
-       + evaluate_diagonal(field, side, player, is_player_turn)
-       - evaluate_horizontal_vertical(field, side, opponent, !is_player_turn)
-       - evaluate_diagonal(field, side, opponent, !is_player_turn);
-}
-*/
