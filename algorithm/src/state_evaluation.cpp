@@ -1,37 +1,38 @@
 
-#define MAX(x,y) (((x) >= (y)) ? (x)  : (y))
-#define MIN(x,y) (((x) <= (y)) ? (x)  : (y))
-#define ABS(x)   (((x) <= (0)) ? (-x) : (x))
-
 // SIX
-#define _WWWW_ 0x000101010100
-#define _WWWWB 0x000101010102
-#define BWWWW_ 0x020101010100
-#define _W_WW_ 0x000100010100
-#define _WW_W_ 0x000101000100
+#define _WWWW_ 0b000101010100
+#define _WWWWB 0b000101010110
+#define BWWWW_ 0b100101010100
+#define _W_WW_ 0b000100010100
+#define _WW_W_ 0b000101000100
 
 // FIVE WITH SHIFT 2 BITS
-#define WWWWW  0x0101010101
-#define W_WWW  0x0100010101
-#define WWW_W  0x0101010001
-#define WW_WW  0x0101000101
-#define W_W_W  0x0100010001
+#define WWWWW  0b0101010101
+#define W_WWW  0b0100010101
+#define WWW_W  0b0101010001
+#define WW_WW  0b0101000101
+#define W_W_W  0b0100010001
 
 // FIVE
-#define _WWW_  0x0001010100
-#define BWWW_  0x0201010100
-#define _WWWB  0x0001010102
-#define _W_W_  0x0001000100
+#define _WWW_  0b0001010100
+#define BWWW_  0b1001010100
+#define _WWWB  0b0001010110
+#define _W_W_  0b0001000100
 
 // FOUR
-#define _WW_   0x00010100
-#define BWW_   0x02010100
-#define _WWB   0x00010102
+#define _WW_   0b00010100
+#define BWW_   0b10010100
+#define _WWB   0b00010110
 
 // THREE
-#define _W_    0x000100
-#define BW_    0x020100
-#define _WB    0x000102
+#define _W_    0b000100
+#define BW_    0b100100
+#define _WB    0b000110
+
+#define PLAYER   0b01
+#define OPPONENT 0b10
+
+#define SHIFT    2
 
 #include <iostream>
 #include "Gomoku.hpp"
@@ -40,7 +41,7 @@
 static long evaluate(long line, size_t& is_win, bool is_player_turn) {
 
   // SIX
-  switch (line & 0xFFFFFFFFFFFF)
+  switch (line & 0b111111111111)
   {
   case _WWWW_:
     return is_player_turn ? 20000 : 15000;
@@ -57,7 +58,7 @@ static long evaluate(long line, size_t& is_win, bool is_player_turn) {
   }
 
   // FIVE WITH SHIFT 1 BYTE
-  switch ((line >> 8) & 0xFFFFFFFFFF)
+  switch ((line >> SHIFT) & 0b1111111111)
   {
   case WWWWW:
     is_win = is_player_turn ? 1 : 0;
@@ -75,7 +76,7 @@ static long evaluate(long line, size_t& is_win, bool is_player_turn) {
   }
 
   // FIVE
-  switch (line & 0xFFFFFFFFFF)
+  switch (line & 0b1111111111)
   {
   case _WWW_:
     return is_player_turn ? 4000 : 2000;
@@ -84,7 +85,7 @@ static long evaluate(long line, size_t& is_win, bool is_player_turn) {
   case _WWWB:
     return is_player_turn ? 2000 : 1500;
   case WW_WW:
-    return is_player_turn ? 20000 : 10000;
+    return is_player_turn ? 20000 : 2500;
   case W_W_W:
     return is_player_turn ? 10000 : 5000;
   case _W_W_:
@@ -94,7 +95,7 @@ static long evaluate(long line, size_t& is_win, bool is_player_turn) {
   }
 
   // FOUR
-  switch (line & 0xFFFFFFFF)
+  switch (line & 0b11111111)
   {
   case _WW_:
     return is_player_turn ? 250 : 200;
@@ -107,7 +108,7 @@ static long evaluate(long line, size_t& is_win, bool is_player_turn) {
   }
 
   // THREE
-  switch (line & 0xFFFFFF)
+  switch (line & 0b111111)
   {
   case _W_:
     return is_player_turn ? 25 : 15;
@@ -126,32 +127,32 @@ static long evaluate(long line, size_t& is_win, bool is_player_turn) {
 static long evaluate_line(long& line, size_t& is_win, bool is_player_turn) {
 
   // если конец линии ставим как будто там противник
-  if (line & 0x01)
-    line = (line << 8) | 0x02;
+  if (line & PLAYER)
+    line = (line << SHIFT) | OPPONENT;
 
 
   //расчет только если предыдущая фишка была наша, а текущая нет
-  if ((line & 0x0102) == 0x0102 || (line & 0x0100) == 0x0100) {
+  if ((line & 0b0110) == 0b0110 || (line & 0b0100) == 0b0100) {
     long score = evaluate(line, is_win, is_player_turn);
-    line = 0x02;
+    line = OPPONENT;
     return score;
   }
 
   // линия начинается с противника
-  line = 0x02;
+  line = OPPONENT;
   return 0;
 }
 
 
 static long evaluate_segment(long& line, size_t& is_win, bool is_player, size_t point, bool is_player_turn) {
 
-  line = line << 8;
+  line = line << SHIFT;
 
   if (point)
-    line = line | (is_player ? 0x01 : 0x02);
+    line = line | (is_player ? PLAYER : OPPONENT);
 
   //расчет только если предыдущая фишка была наша, а текущая нет
-  if ((line & 0x0102) == 0x0102 || line & 0x0100)
+  if ((line & 0b0110) == 0b0110 || line & 0b0100)
     return evaluate(line, is_win, is_player_turn);
 
   return 0;
@@ -160,12 +161,12 @@ static long evaluate_segment(long& line, size_t& is_win, bool is_player, size_t 
 
 static long evaluate_diagonal(t_point* field, long side, size_t& is_win, t_color player, bool is_player_turn) {
 
-  long diagonale = 0x02;
+  long diagonale = OPPONENT;
   long score     = 0;
 
   for (long i = 0; i != side * 2 - 1; ++i) {
-    long f_y = MIN(i, side - 1);
-    long f_x = MAX(0, i - (side - 1));
+    long f_y = std::min(i, side - 1);
+    long f_x = std::max(0L, i - (side - 1));
     for (long j = 0; j != side; ++j) {
       // bottom-left -> top-right
       if (f_y - j <= -1 || f_x + j >= side)
@@ -177,8 +178,8 @@ static long evaluate_diagonal(t_point* field, long side, size_t& is_win, t_color
   }
 
   for (long i = side - 1; i > -side; --i) {
-    long f_y = ABS(MIN(0, i));
-    long f_x = MAX(0, i);
+    long f_y = std::abs(std::min(0L, i));
+    long f_x = std::max(0L, i);
     // top-left -> bottom-right
     for (long j = 0; j != side; ++j) {
       if (f_y + j >= side || f_x + j >= side)
@@ -196,8 +197,8 @@ static long evaluate_diagonal(t_point* field, long side, size_t& is_win, t_color
 
 static long evaluate_horizontal_vertical(t_point* field, long side, size_t& is_win, t_color player, bool is_player_turn) {
 
-  long horizontal  = 0x02;
-  long vertical    = 0x02;
+  long horizontal  = OPPONENT;
+  long vertical    = OPPONENT;
   long score       = 0;
 
   for (long y = 0; y != side; ++y) {

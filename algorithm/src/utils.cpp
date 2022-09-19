@@ -4,32 +4,69 @@
 #include "utils.hpp"
 
 
-std::vector<std::string> MOVES = std::vector<std::string>();
+size_t *create_horizontal_positions(long side) {
 
+  size_t i = 0;
+  size_t* horizontal = new size_t[side * side];
 
-void fill_moves(unsigned board_size) {
-  for (unsigned r = 0; r < board_size; ++r) {
-    for (unsigned c = 0; c < board_size; ++c) {
-      MOVES.push_back(std::string(1, (char)(97 + c)) + std::to_string(r + 1));
+  for (long y = 0; y != side; ++y) {
+    for (long x = 0; x != side; ++x) {
+      horizontal[i] = x * side + y;
+      ++i;
     }
   }
-  auto rng = std::default_random_engine(time(0));
-  std::shuffle(std::begin(MOVES), std::end(MOVES), rng);
+  return horizontal;
+}
+
+size_t *create_vertical_positions(long side) {
+
+  size_t i = 0;
+  size_t* horizontal = new size_t[side * side];
+
+  for (long y = 0; y != side; ++y) {
+    for (long x = 0; x != side; ++x) {
+      horizontal[i] = y * side + x;
+      ++i;
+    }
+  }
+  return horizontal;
+}
+
+size_t *create_diagonal_bl_tp_positions(long side) {
+
+  size_t i = 0;
+  size_t* diagonal = new size_t[side * side];
+
+  for (long i = 0; i != side * 2 - 1; ++i) {
+    long f_y = std::min(i, side - 1);
+    long f_x = std::max(0L, i - (side - 1));
+    for (long j = 0; j != side; ++j) {
+      // bottom-left -> top-right
+      if (f_y - j <= -1 || f_x + j >= side)
+        break;
+      diagonal[i] = (f_y - j) * side + (f_x + j);
+      ++i;
+    }
+  }
+  return diagonal;
 }
 
 
-std::string get_random_move() {
-  return MOVES[0];
-}
+size_t *create_diagonal_tl_br_positions(long side) {
 
+  size_t i = 0;
+  size_t* diagonal = new size_t[side * side];
 
-std::string get_and_remove_random_move() {
-  std::string move = *MOVES.begin();
-  remove_move(move);
-  return move;
-}
-
-
-void remove_move(std::string move) {
-  MOVES.erase(std::find(MOVES.begin(), MOVES.end(), move));
+  for (long i = side - 1; i > -side; --i) {
+    long f_y = std::abs(std::min(0L, i));
+    long f_x = std::max(0L, i);
+    // top-left -> bottom-right
+    for (long j = 0; j != side; ++j) {
+      if (f_y + j >= side || f_x + j >= side)
+        break;
+      diagonal[i] = (f_y + j) * side + (f_x + j);
+      ++i;
+    }
+  }
+  return diagonal;
 }

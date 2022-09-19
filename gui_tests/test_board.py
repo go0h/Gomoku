@@ -178,16 +178,16 @@ class TestBoard:
         board.check_win_top_left__bottom_right(x, y)
 
     # ##################################################################################
-    # ################################### CATCHES ######################################
+    # ################################### captureES ######################################
     # ##################################################################################
-    def test_horizontal_catch_right(self):
+    def test_horizontal_capture_right(self):
         piecies = {"a19": BLACK, "b19": WHITE, "c19": WHITE}
         board = get_board_with_pieces(piecies)
 
         assert board.get_positions_of_captures("d19", BLACK) == ["c19", "b19"]
         assert board.get_positions_of_captures("d19", WHITE) == []
 
-    def test_horizontal_catch_left(self):
+    def test_horizontal_capture_left(self):
         piecies = {"b19": WHITE, "c19": WHITE, "d19": BLACK}
         board = get_board_with_pieces(piecies)
 
@@ -201,49 +201,49 @@ class TestBoard:
         assert board.get_positions_of_captures("a19", BLACK) == []
         assert board.get_positions_of_captures("a19", WHITE) == []
 
-    def test_vertical_catch_top(self):
+    def test_vertical_capture_top(self):
         piecies = {"a1": BLACK, "a2": WHITE, "a3": WHITE}
         board = get_board_with_pieces(piecies)
 
         assert board.get_positions_of_captures("a4", BLACK) == ["a3", "a2"]
         assert board.get_positions_of_captures("a4", WHITE) == []
 
-    def test_vertical_catch_bottom(self):
+    def test_vertical_capture_bottom(self):
         piecies = {"a2": WHITE, "a3": WHITE, "a4": BLACK}
         board = get_board_with_pieces(piecies)
 
         assert board.get_positions_of_captures("a1", BLACK) == ["a2", "a3"]
         assert board.get_positions_of_captures("a1", WHITE) == []
 
-    def test_diagonal_catch_top_left(self):
+    def test_diagonal_capture_top_left(self):
         piecies = {"b18": WHITE, "c17": WHITE, "d16": BLACK}
         board = get_board_with_pieces(piecies)
 
         assert board.get_positions_of_captures("a19", BLACK) == ["b18", "c17"]
         assert board.get_positions_of_captures("a19", WHITE) == []
 
-    def test_diagonal_catch_bottom_left(self):
+    def test_diagonal_capture_bottom_left(self):
         piecies = {"b2": WHITE, "c3": WHITE, "d4": BLACK}
         board = get_board_with_pieces(piecies)
 
         assert board.get_positions_of_captures("a1", BLACK) == ["b2", "c3"]
         assert board.get_positions_of_captures("a1", WHITE) == []
 
-    def test_diagonal_catch_top_right(self):
+    def test_diagonal_capture_top_right(self):
         piecies = {"r18": WHITE, "q17": WHITE, "p16": BLACK}
         board = get_board_with_pieces(piecies)
 
         assert board.get_positions_of_captures("s19", BLACK) == ["r18", "q17"]
         assert board.get_positions_of_captures("s19", WHITE) == []
 
-    def test_diagonal_catch_bottom_right(self):
+    def test_diagonal_capture_bottom_right(self):
         piecies = {"r2": WHITE, "q3": WHITE, "p4": BLACK}
         board = get_board_with_pieces(piecies)
 
         assert board.get_positions_of_captures("s1", BLACK) == ["r2", "q3"]
         assert board.get_positions_of_captures("s1", WHITE) == []
 
-    def test_all_catches_in_one(self):
+    def test_all_captures_in_one(self):
         piecies = {"f14": BLACK, "g13": WHITE, "f13": BLACK, "h12": WHITE, "h14": BLACK, "i12": WHITE, "i14": BLACK,
                    "i13": WHITE, "k14": BLACK, "j12": WHITE, "l14": BLACK, "k13": WHITE, "l12": BLACK, "j11": WHITE,
                    "l11": BLACK, "k11": WHITE, "l9": BLACK, "j10": WHITE, "l8": BLACK, "k9": WHITE, "j8": BLACK,

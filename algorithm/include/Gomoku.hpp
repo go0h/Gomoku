@@ -41,8 +41,8 @@ public:
   {
     t_move_eval*          poss_moves;
     size_t                num_moves;
-    size_t*               depth_catches;
-    size_t                num_catches;
+    size_t*               captures;
+    size_t                num_captures;
   }               t_depth_state;
 
   Gomoku();
@@ -76,7 +76,7 @@ private:
    */
   t_move_eval*      _get_possible_moves(size_t depth, t_color player);
   void              _set_move_and_catch(Board& state, size_t depth, size_t x, size_t y, t_color player);
-  void              _remove_move_and_catches(Board& state, size_t depth, size_t x, size_t y, t_color player);
+  void              _remove_move_and_captures(Board& state, size_t depth, size_t x, size_t y, t_color player);
   MakeTurn*         _create_turn(t_coord best_move);
 
 

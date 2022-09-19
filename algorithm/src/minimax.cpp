@@ -32,17 +32,17 @@ MakeTurn* Gomoku::minimax() {
 
   for (size_t i = 0; i != num_moves; ++i) {
 
-    t_move_eval& move = possible_moves[i];
+    t_move_eval move = possible_moves[i];
 
     _set_move_and_catch(_board, _difficult, move.x, move.y, _player);
 
     score = minimax(_board, _difficult - 1, opponent, _player, alpha, PLUS_INF);
 
-    if (_depth_state[_difficult].num_catches) {
-      score += get_catch_score(_depth_state[_difficult].num_catches);
-    }
+    if (_depth_state[_difficult].num_captures)
+      score += get_catch_score(_captures[_player]);
 
-    _remove_move_and_catches(_board, _difficult, move.x, move.y, _player);
+
+    _remove_move_and_captures(_board, _difficult, move.x, move.y, _player);
 
     if (-score > alpha) {
       alpha = -score;
@@ -52,33 +52,6 @@ MakeTurn* Gomoku::minimax() {
   _set_move_and_catch(_board, _difficult, best.x, best.y, _player);
 
   return _create_turn(best);
-}
-
-MakeTurn* Gomoku::_create_turn(t_coord best_move) {
-
-  MakeTurn*    m = new MakeTurn();
-  t_move_eval* possible_moves = _get_possible_moves(_difficult, _player);
-  size_t       num_moves = _depth_state[_difficult].num_moves;
-
-  m->position = _board.coord_to_pos(best_move);
-  m->color = _color2str[_player];
-
-  for (size_t i = 0; i != num_moves; ++i) {
-    t_move_eval move = possible_moves[i];
-
-    if (move.x != best_move.x || move.y != best_move.y)
-      m->hints.push_back(_board.coord_to_pos(move.x, move.y));
-  }
-
-  for (size_t i = 0; i < _depth_state[_difficult].num_catches; ++i) {
-
-    size_t x = _depth_state[_difficult].depth_catches[i] % _board.getSide();
-    size_t y = _depth_state[_difficult].depth_catches[i] / _board.getSide();
-
-    m->captures.push_back(_board.coord_to_pos(x, y));
-  }
-
-  return m;
 }
 
 
@@ -110,11 +83,10 @@ double Gomoku::minimax(Board& state, size_t depth, t_color player, t_color oppon
 
     double score = minimax(state, depth - 1, opponent, player, -betta, -alpha);
 
-    if (_depth_state[_difficult].num_catches) {
-      score += get_catch_score(_depth_state[_difficult].num_catches);
-    }
+    if (_depth_state[depth].num_captures)
+      score += get_catch_score(_captures[_player]);
 
-    _remove_move_and_catches(state, depth, move.x, move.y, player);
+    _remove_move_and_captures(state, depth, move.x, move.y, player);
 
     if (-score > alpha)
       alpha = -score;
@@ -131,8 +103,8 @@ void Gomoku::_set_move_and_catch(Board& state, size_t depth, size_t x, size_t y,
   t_point*  field = state.getField();
   size_t    side = state.getSide();
   t_color   opponent = player == WHITE ? BLACK : WHITE;
-  size_t*   catches = _depth_state[depth].depth_catches;
-  size_t&   num_catches = _depth_state[depth].num_catches;
+  size_t*   captures = _depth_state[depth].captures;
+  size_t&   num_captures = _depth_state[depth].num_captures;
 
   state(x, y) = player;
 
@@ -151,8 +123,8 @@ void Gomoku::_set_move_and_catch(Board& state, size_t depth, size_t x, size_t y,
       if (field[p1] == opponent && field[p2] == opponent) {
         field[p1] = EMPTY;
         field[p2] = EMPTY;
-        catches[num_catches++] = p1;
-        catches[num_catches++] = p2;
+        captures[num_captures++] = p1;
+        captures[num_captures++] = p2;
         _captures[player] += 2;
       }
     }
@@ -160,17 +132,44 @@ void Gomoku::_set_move_and_catch(Board& state, size_t depth, size_t x, size_t y,
 }
 
 
-void Gomoku::_remove_move_and_catches(Board& state, size_t depth, size_t x, size_t y, t_color player) {
+void Gomoku::_remove_move_and_captures(Board& state, size_t depth, size_t x, size_t y, t_color player) {
 
   t_point*  field = state.getField();
   t_color   opponent = player == WHITE ? BLACK : WHITE;
-  size_t*   catches = _depth_state[depth].depth_catches;
-  size_t&   num_catches = _depth_state[depth].num_catches;
+  size_t*   captures = _depth_state[depth].captures;
+  size_t&   num_captures = _depth_state[depth].num_captures;
 
   state(x, y) = EMPTY;
-  for (size_t i = 0; i < num_catches; ++i) {
-    field[catches[i]] = opponent;
+  for (size_t i = 0; i < num_captures; ++i) {
+    field[captures[i]] = opponent;
     _captures[player] -= 1;
   }
-  num_catches = 0;
+  num_captures = 0;
+}
+
+MakeTurn* Gomoku::_create_turn(t_coord best_move) {
+
+  MakeTurn*    m = new MakeTurn();
+  t_move_eval* possible_moves = _get_possible_moves(_difficult, _player);
+  size_t       num_moves = _depth_state[_difficult].num_moves;
+
+  m->position = _board.coord_to_pos(best_move);
+  m->color = _color2str[_player];
+
+  for (size_t i = 0; i != num_moves; ++i) {
+    t_move_eval move = possible_moves[i];
+
+    if (move.x != best_move.x || move.y != best_move.y)
+      m->hints.push_back(_board.coord_to_pos(move.x, move.y));
+  }
+
+  for (size_t i = 0; i < _depth_state[_difficult].num_captures; ++i) {
+
+    size_t x = _depth_state[_difficult].captures[i] % _board.getSide();
+    size_t y = _depth_state[_difficult].captures[i] / _board.getSide();
+
+    m->captures.push_back(_board.coord_to_pos(x, y));
+  }
+
+  return m;
 }
