@@ -3,7 +3,7 @@
 #include <iostream>
 
 
-double get_catch_score(int n) {
+static double get_catch_score(int n) {
 	switch (n) {
 		case 0:
 			return 0;
@@ -51,16 +51,22 @@ MakeTurn* Gomoku::minimax() {
   }
   _set_move_and_catch(_board, _difficult, best.x, best.y, _player);
 
+  return _create_turn(best);
+}
 
-  // TODO
-  MakeTurn* m = new MakeTurn();
+MakeTurn* Gomoku::_create_turn(t_coord best_move) {
 
-  m->position = _board.coord_to_pos(best);
+  MakeTurn*    m = new MakeTurn();
+  t_move_eval* possible_moves = _get_possible_moves(_difficult, _player);
+  size_t       num_moves = _depth_state[_difficult].num_moves;
+
+  m->position = _board.coord_to_pos(best_move);
   m->color = _color2str[_player];
 
   for (size_t i = 0; i != num_moves; ++i) {
     t_move_eval move = possible_moves[i];
-    if (move.x != best.x || move.y != best.y)
+
+    if (move.x != best_move.x || move.y != best_move.y)
       m->hints.push_back(_board.coord_to_pos(move.x, move.y));
   }
 
@@ -71,6 +77,7 @@ MakeTurn* Gomoku::minimax() {
 
     m->captures.push_back(_board.coord_to_pos(x, y));
   }
+
   return m;
 }
 

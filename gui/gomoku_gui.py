@@ -119,7 +119,7 @@ class GomokuGui:
         b_size.place(relx=.5, rely=.59, anchor="center")
 
         board_size = ttk.StringVar()
-        board_size.set("19 x 19")
+        board_size.set("15 x 15")
         r2 = ttk.OptionMenu(frame, board_size, "15 x 15", "19 x 19")
         r2.configure(font=BUTTON_FONT,
                      width=OPTION_MENU_WIDTH, height=OPTION_MENU_HEIGHT,

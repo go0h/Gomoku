@@ -167,7 +167,6 @@ class BoardGui:
         self._print_win_strike(strike)
         self._moves.set(self._moves.get() + 1)
         self._send_func(method="winner", arguments={"winner": self._cur_player._color})
-        self._switch_player()
         self._stop_move_time()
 
     def print_forbidden_move(self, x, y):
@@ -229,7 +228,14 @@ class BoardGui:
                     self._cur_player.catch(len(kwargs["captures"]))
                 if "hints" in kwargs.keys():
                     self.print_hints(**kwargs)
-                self._next()
+
+                strike = self._board.get_win_strike(position)
+                if (len(strike) != 0 and
+                    not self._board.check_win_strike_to_capture_by_pos(strike, self._cur_player.get_color())) \
+                        or self._cur_player.catches() >= 10:
+                    self.print_winner(strike)
+                else:
+                    self._next()
 
     def _switch_player(self):
         if self._cur_player == self._p1:
