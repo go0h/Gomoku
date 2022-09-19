@@ -36,7 +36,7 @@ long FREE_THREE[3][3] = {
 };
 
 
-long CATCHES[3][2] = {
+long CAPTURES[3][2] = {
   {  0,     0  },
   { BW_B, B_WB },
   { W_BW, WB_W }
@@ -115,7 +115,7 @@ size_t is_capture(t_point* field, size_t side, long x, long y, long x_dir, long 
       size_t x_ = x + i * x_dir;
       size_t y_ = y + i * y_dir;
 
-      t_point pp = (CATCHES[player][j] >> (i * 8)) & 0xFF;
+      t_point pp = (CAPTURES[player][j] >> (i * 8)) & 0xFF;
 
       if (x_ < side && y_ < side && field[y_ * side + x_] == pp)
         continue;

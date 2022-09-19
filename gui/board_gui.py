@@ -132,8 +132,8 @@ class BoardGui:
         self._time_spend_label = ttk.Label(self._info_frame, text="0.00", font=LABEL_FONT, bg=BOARD_COLOR)
         self._time_spend_label.place(relx=.7, rely=.61, anchor="center")
 
-        catches_l = ttk.Label(self._info_frame, text='Catches:', font=font_u, bg=BOARD_COLOR)
-        catches_l.place(relx=.1, rely=.75, anchor="w")
+        captures_l = ttk.Label(self._info_frame, text='Captures:', font=font_u, bg=BOARD_COLOR)
+        captures_l.place(relx=.1, rely=.75, anchor="w")
 
         if self._config.get_mode() == "PvE":
             if self._config.get_first_move() == "BLACK":
@@ -206,12 +206,15 @@ class BoardGui:
                 capture = self._board.get_positions_of_captures(position, self._cur_player.get_color())
                 if len(capture) != 0:
                     self.hide_captured(position, capture)
-                    self._cur_player.catch(len(capture))
+                    self._cur_player.add_captures(len(capture))
 
                 strike = self._board.get_win_strike(position)
-                if (len(strike) != 0 and
-                    not self._board.check_win_strike_to_capture_by_pos(strike, self._cur_player.get_color())) \
-                        or self._cur_player.catches() >= 10:
+                # если есть выйгрышная серия и если противник не сможет захватить ее и набрать
+                # за последний ход >= 10 захватов
+                opponent = self._p2 if self._cur_player == self._p1 else self._p1
+                if (len(strike) != 0 \
+                        and (opponent.captures() + self._board.get_num_of_captures_by_pos(strike, opponent.get_color()) < 10)) \
+                    or self._cur_player.captures() >= 10:
                     self.print_winner(strike)
                 else:
                     self._send_method("make_turn", position, capture)
@@ -225,14 +228,15 @@ class BoardGui:
                 self.set_piece(position, x, y, self._cur_player.get_color())
                 if "captures" in kwargs.keys():
                     self.hide_captured(position, kwargs["captures"])
-                    self._cur_player.catch(len(kwargs["captures"]))
+                    self._cur_player.add_captures(len(kwargs["captures"]))
                 if "hints" in kwargs.keys():
                     self.print_hints(**kwargs)
 
+                opponent = self._p2 if self._cur_player == self._p1 else self._p1
                 strike = self._board.get_win_strike(position)
-                if (len(strike) != 0 and
-                    not self._board.check_win_strike_to_capture_by_pos(strike, self._cur_player.get_color())) \
-                        or self._cur_player.catches() >= 10:
+                if (len(strike) != 0 \
+                        and (opponent.captures() + self._board.get_num_of_captures_by_pos(strike, opponent.get_color()) < 10)) \
+                    or self._cur_player.captures() >= 10:
                     self.print_winner(strike)
                 else:
                     self._next()
@@ -261,7 +265,7 @@ class BoardGui:
             pos = p.get_pos()
             captures = None
             if pos in self._captured.keys():
-                self._cur_player.undo_catch(len(self._captured[pos]))
+                self._cur_player.undo_captures(len(self._captured[pos]))
                 self.show_captured(pos)
                 captures = [c.get_pos() for c in self._captured[pos]]
             self._send_method("back", p.get_pos(), captures)

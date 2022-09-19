@@ -19,8 +19,8 @@ Gomoku::Gomoku() :
     _depth_state[i].num_moves = 0;
     _depth_state[i].poss_moves = new t_move_eval[_board.getSide() * _board.getSide()];
 
-    _depth_state[i].num_catches = 0;
-    _depth_state[i].depth_catches = new size_t[16];
+    _depth_state[i].num_captures = 0;
+    _depth_state[i].captures = new size_t[16];
   }
 
 }
@@ -40,8 +40,8 @@ Gomoku::Gomoku(t_gomoku_mode mode, t_color color, t_difficult difficult, size_t 
     _depth_state[i].num_moves = 0;
     _depth_state[i].poss_moves = new t_move_eval[_board.getSide() * _board.getSide()];
 
-    _depth_state[i].num_catches = 0;
-    _depth_state[i].depth_catches = new size_t[16];
+    _depth_state[i].num_captures = 0;
+    _depth_state[i].captures = new size_t[16];
   }
 
 }
@@ -50,7 +50,7 @@ Gomoku::~Gomoku() {
 
   for (size_t i = 0; i <= HARD; ++i) {
     delete[] _depth_state[i].poss_moves;
-    delete[] _depth_state[i].depth_catches;
+    delete[] _depth_state[i].captures;
   }
 
   delete[] _depth_state;
@@ -170,9 +170,9 @@ void Gomoku::_print_config() {
   std::cout << GREEN << "Board size:\t\t" << CYAN << _board.getSide() << std::endl;
 
   std::cout << GREEN << "Player color:\t\t" << CYAN << (_player == WHITE ? "WHITE" : "BLACK") << std::endl;
-  std::cout << GREEN << "Player catches:\t\t" << CYAN << _captures[_player] << std::endl;
+  std::cout << GREEN << "Player captures:\t\t" << CYAN << _captures[_player] << std::endl;
 
   std::cout << GREEN << "Opponent color:\t\t" << CYAN << (_player == WHITE ? "BLACK" : "WHITE") << std::endl;
-  std::cout << GREEN << "Opponent catches:\t" << CYAN << \
+  std::cout << GREEN << "Opponent captures:\t" << CYAN << \
     _captures[(_player == WHITE ? BLACK : WHITE)] << RESET << std::endl;
 }
