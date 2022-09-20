@@ -20,6 +20,8 @@ class GomokuGuiConnection : public std::enable_shared_from_this<GomokuGuiConnect
     return pointer(new GomokuGuiConnection(io_service));
   }
 
+  ~GomokuGuiConnection() {};
+
   boost::asio::ip::tcp::socket& socket() {  return _socket; }
 
   void start();
@@ -28,11 +30,7 @@ class GomokuGuiConnection : public std::enable_shared_from_this<GomokuGuiConnect
 
   static unsigned _client_counter;
 
-  GomokuGuiConnection(boost::asio::io_service& io_service)
-    : _id(_client_counter++),
-      _socket(io_service),
-      _game(Gomoku()) {}
-
+  GomokuGuiConnection(boost::asio::io_service& io_service);
 
   void _async_read();
   void _handle_read(const boost::system::error_code& error, std::size_t len);

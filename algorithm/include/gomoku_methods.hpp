@@ -7,7 +7,7 @@
 using json = nlohmann::json;
 
 
-struct MethodArgs : public std::enable_shared_from_this<MethodArgs> {
+struct MethodArgs {
   using pointer = std::shared_ptr<MethodArgs>;
 
   virtual ~MethodArgs() {};

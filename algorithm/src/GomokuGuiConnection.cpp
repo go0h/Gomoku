@@ -9,6 +9,14 @@ using namespace boost::asio;
 
 unsigned GomokuGuiConnection::_client_counter = 0;
 
+GomokuGuiConnection::GomokuGuiConnection(boost::asio::io_service& io_service) :
+  _id(_client_counter++),
+  _socket(io_service),
+  _game(Gomoku())
+{
+  memset(_data, 0, DATA_LENGTH);
+}
+
 void GomokuGuiConnection::start() {
   _async_read();
 }

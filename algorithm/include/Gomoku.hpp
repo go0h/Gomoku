@@ -91,7 +91,7 @@ private:
   t_color                       _player;
   t_difficult                   _difficult;
   Board                         _board;
-  t_depth_state*                _depth_state;
+  t_depth_state*                _depth_state = nullptr;
   int                           _captures[3] = { 0, 0, 0 };
 
   std::map<size_t, double>      _score_states;

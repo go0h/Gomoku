@@ -146,6 +146,7 @@ void Gomoku::_remove_move_and_captures(Board& state, size_t depth, size_t x, siz
   num_captures = 0;
 }
 
+
 MakeTurn* Gomoku::_create_turn(t_coord best_move) {
 
   MakeTurn*    m = new MakeTurn();
