@@ -64,11 +64,11 @@ static long evaluate(long line, size_t& is_win, bool is_player_turn) {
     is_win = 1; // is_player_turn ? 1 : 0;
     return 100000;
   case W_WWW:
-    return is_player_turn ? 20000 : 3500;
+    return is_player_turn ? 20000 : 4500;
   case WWW_W:
-    return is_player_turn ? 20000 : 3500;
+    return is_player_turn ? 20000 : 4500;
   case WW_WW:
-    return is_player_turn ? 20000 : 3500;
+    return is_player_turn ? 20000 : 4500;
   case W_W_W:
     return is_player_turn ? 3500 : 1500;
   default:
@@ -85,7 +85,7 @@ static long evaluate(long line, size_t& is_win, bool is_player_turn) {
   case _WWWB:
     return is_player_turn ? 2000 : 1500;
   case WW_WW:
-    return is_player_turn ? 20000 : 3500;
+    return is_player_turn ? 20000 : 5000;
   case W_W_W:
     return is_player_turn ? 3500 : 2000;
   case _W_W_:
@@ -159,10 +159,13 @@ static long evaluate_segment(long& line, size_t& is_win, bool is_player, size_t 
 }
 
 
-static long evaluate_diagonal(t_point* field, long side, size_t& is_win, t_color player, bool is_player_turn) {
+static long evaluate_diagonal(
+              t_point* field, long side, size_t& is_win,
+              t_color player, t_color opponent, bool is_player_turn) {
 
-  long diagonale = OPPONENT;
-  long score     = 0;
+  long player_line = OPPONENT;
+  long opponent_line = OPPONENT;
+  long score = 0;
 
   for (long i = 0; i != side * 2 - 1; ++i) {
     long f_y = std::min(i, side - 1);
@@ -172,9 +175,12 @@ static long evaluate_diagonal(t_point* field, long side, size_t& is_win, t_color
       if (f_y - j <= -1 || f_x + j >= side)
         break;
       long pos = (f_y - j) * side + (f_x + j);
-      score += evaluate_segment(diagonale, is_win, field[pos] == player, field[pos], is_player_turn);
+      score += evaluate_segment(player_line, is_win, field[pos] == player, field[pos], is_player_turn);
+      score -= evaluate_segment(opponent_line, is_win, field[pos] == opponent, field[pos], !is_player_turn);
+
     }
-    score += evaluate_line(diagonale, is_win, is_player_turn);
+    score += evaluate_line(player_line, is_win, is_player_turn);
+    score -= evaluate_line(opponent_line, is_win, !is_player_turn);
   }
 
   for (long i = side - 1; i > -side; --i) {
@@ -186,20 +192,26 @@ static long evaluate_diagonal(t_point* field, long side, size_t& is_win, t_color
         break;
 
       long pos = (f_y + j) * side + (f_x + j);
-      score += evaluate_segment(diagonale, is_win, field[pos] == player, field[pos], is_player_turn);
+      score += evaluate_segment(player_line, is_win, field[pos] == player, field[pos], is_player_turn);
+      score -= evaluate_segment(opponent_line, is_win, field[pos] == opponent, field[pos], !is_player_turn);
     }
-    score += evaluate_line(diagonale, is_win, is_player_turn);
+    score += evaluate_line(player_line, is_win, is_player_turn);
+    score -= evaluate_line(opponent_line, is_win, !is_player_turn);
   }
 
   return score;
 }
 
 
-static long evaluate_horizontal_vertical(t_point* field, long side, size_t& is_win, t_color player, bool is_player_turn) {
+static long evaluate_horizontal_vertical(
+              t_point* field, long side, size_t& is_win,
+              t_color player, t_color opponent, bool is_player_turn) {
 
-  long horizontal  = OPPONENT;
-  long vertical    = OPPONENT;
-  long score       = 0;
+  long horizontal_player = OPPONENT;
+  long horizontal_opponent = OPPONENT;
+  long vertical_player = OPPONENT;
+  long vertical_opponent = OPPONENT;
+  long score  = 0;
 
   for (long y = 0; y != side; ++y) {
     for (long x = 0; x != side; ++x) {
@@ -207,11 +219,17 @@ static long evaluate_horizontal_vertical(t_point* field, long side, size_t& is_w
       long pos1 = x * side + y;
       long pos2 = y * side + x;
 
-      score += evaluate_segment(horizontal, is_win, field[pos1] == player, field[pos1], is_player_turn);
-      score += evaluate_segment(vertical, is_win, field[pos2] == player, field[pos2], is_player_turn);
+      score += evaluate_segment(horizontal_player, is_win, field[pos1] == player, field[pos1], is_player_turn);
+      score += evaluate_segment(vertical_player, is_win, field[pos2] == player, field[pos2], is_player_turn);
+
+      score -= evaluate_segment(horizontal_opponent, is_win, field[pos1] == opponent, field[pos1], !is_player_turn);
+      score -= evaluate_segment(vertical_opponent, is_win, field[pos2] == opponent, field[pos2], !is_player_turn);
     }
-    score += evaluate_line(horizontal, is_win, is_player_turn);
-    score += evaluate_line(vertical, is_win, is_player_turn);
+    score += evaluate_line(horizontal_player, is_win, is_player_turn);
+    score += evaluate_line(vertical_player, is_win, is_player_turn);
+
+    score -= evaluate_line(horizontal_opponent, is_win, !is_player_turn);
+    score -= evaluate_line(vertical_opponent, is_win, !is_player_turn);
   }
 
   return score;
@@ -224,10 +242,10 @@ double evaluate_state(Board& state, size_t& is_win, t_color player, bool is_play
   t_point* field = state.getField();
   t_color  opponent = (player == WHITE) ? BLACK : WHITE;
 
-  return (double)(evaluate_horizontal_vertical(field, side, is_win, player, is_player_turn)
-                + evaluate_diagonal(field, side, is_win, player, is_player_turn)
-                - evaluate_horizontal_vertical(field, side, is_win, opponent, !is_player_turn)
-                - evaluate_diagonal(field, side, is_win, opponent, !is_player_turn));
+  return (double)(evaluate_horizontal_vertical(field, side, is_win, player, opponent, is_player_turn)
+                + evaluate_diagonal(field, side, is_win, player, opponent, is_player_turn));
+                // - evaluate_horizontal_vertical(field, side, is_win, opponent, !is_player_turn)
+                // - evaluate_diagonal(field, side, is_win, opponent, !is_player_turn));
 
   // double player_hv_score = evaluate_horizontal_vertical(field, side, is_win, player, is_player_turn);
   // double player_d_score = evaluate_diagonal(field, side, is_win, player, is_player_turn);

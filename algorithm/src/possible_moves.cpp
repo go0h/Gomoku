@@ -1,18 +1,10 @@
 
-#define _WWW_   0x0001010100
-#define _BBB_   0x0002020200
+#define _XXX_   0b0001010100
+#define _X_XX_  0b000100010100
+#define _XX_X_  0b000101000100
 
-#define _W_WW_  0x000100010100
-#define _B_BB_  0x000200020200
-
-#define _WW_W_  0x000101000100
-#define _BB_B_  0x000202000200
-
-#define BW_B    0x02010002
-#define B_WB    0x02000102
-
-#define W_BW    0x01000201
-#define WB_W    0x01020001
+#define XO_X    0b10010010
+#define X_OX    0b10000110
 
 #include <iostream>
 #include <random>
@@ -29,105 +21,103 @@ long DIRECTIONS[8][2] = {
 };
 
 
-long FREE_THREE[3][3] = {
-  {   5  ,    6  ,   6    },
-  { _WWW_, _W_WW_, _WW_W_ },
-  { _BBB_, _B_BB_, _BB_B_ }
-};
+size_t is_free_tree(size_t line) {
 
+  switch (line & 0b111111111111)
+  {
+  case _X_XX_:
+    return 1;
+  case _XX_X_:
+    return 1;
+  default:
+    break;
+  }
 
-long CAPTURES[3][2] = {
-  {  0,     0  },
-  { BW_B, B_WB },
-  { W_BW, WB_W }
-};
+  if (((line >> 2) & 0b1111111111) == _XXX_)
+    return 1;
 
-//TODO optimize
-size_t get_free_three_by_dir(t_point* field, long side, long x, long y, long x_dir, long y_dir, t_color player) {
+  return 0;
+}
+
+size_t get_free_three_by_dir(t_point* field, long side, long x, long y, long x_dir, long y_dir, t_color opponent) {
 
   size_t three_num = 0;
 
-  for (size_t p_num = 0; p_num != 3; ++p_num) {
+  for (long i = 1; i != 6; ++i) {
 
-    size_t pattern = FREE_THREE[player][p_num];
+      size_t line = 0;
+      long x_p = x - i * x_dir;
+      long y_p = y - i * y_dir;
 
-    for (long i = 1; i != FREE_THREE[0][p_num]; ++i) {
-        long is_free_tree = 1;
-        long x_p = x - i * x_dir;
-        long y_p = y - i * y_dir;
+    for (long j = 0; j != 6; ++j) {
+      long x_ = x_p + j * x_dir;
+      long y_ = y_p + j * y_dir;
+      long pos = (y_p + j * y_dir) * side + x_p + j * x_dir;
 
-      for (long j = 0; j != FREE_THREE[0][p_num]; ++j) {
-        long x_ = x_p + j * x_dir;
-        long y_ = y_p + j * y_dir;
-        t_point pp = (pattern >> (j * 8)) & 0xFF;
+      line = line << 2;
 
-        if (x_ > -1 && x_ < side && y_ > -1 && y_ < side && field[y_ * side + x_] == pp) {
-          continue;
-        } else {
-          is_free_tree = 0;
-          break;
-        }
+      if (x_ > -1 && x_ < side && y_ > -1 && y_ < side && field[pos] != opponent) {
+        line = line | (field[pos] ? 0b01 : 0b00);
+        continue;
+      } else {
+        break;
       }
-      three_num += is_free_tree;
     }
+    three_num += is_free_tree(line);
   }
   return three_num;
 }
 
-
 size_t get_num_of_free_threes(t_point* field, size_t side, size_t x, size_t y, t_color player) {
 
-  size_t three_num = 0;
+  size_t  three_num = 0;
+  t_color opponent = player == WHITE ? BLACK : WHITE;
+  size_t  pos = y * side + x;
 
-  if (field[y * side + x] != EMPTY)
+  if (field[pos] != EMPTY)
     return three_num;
-  field[y * side + x] = player;
+  field[pos] = player;
 
   // horizontal
   if (x > 0 && x < side - 1)
-    three_num += get_free_three_by_dir(field, side, x, y, 1, 0, player);
+    three_num += get_free_three_by_dir(field, side, x, y, 1, 0, opponent);
 
   // vertical
   if (y > 0 && y < side - 1)
-    three_num += get_free_three_by_dir(field, side, x, y, 0, 1, player);
+    three_num += get_free_three_by_dir(field, side, x, y, 0, 1, opponent);
 
   if (x > 0 && x < side - 1 && y > 0 && y < side - 1) {
 
     // diagonal top-left <-> bottom-right
-    three_num += get_free_three_by_dir(field, side, x, y, 1, 1, player);
+    three_num += get_free_three_by_dir(field, side, x, y, 1, 1, opponent);
 
     // diagonal top-right <-> bottom-left
-    three_num += get_free_three_by_dir(field, side, x, y, 1, -1, player);
+    three_num += get_free_three_by_dir(field, side, x, y, 1, -1, opponent);
   }
 
-  field[y * side + x] = EMPTY;
+  field[pos] = EMPTY;
   return three_num;
 }
 
-
 size_t is_capture(t_point* field, size_t side, long x, long y, long x_dir, long y_dir, t_color player) {
 
-  for (size_t j = 0; j != 2; ++j) {
+  size_t line = 0;
 
-    bool is_capture = true;
+  for (size_t i = 0; i != 4; ++i) {
+    size_t x_ = x + i * x_dir;
+    size_t y_ = y + i * y_dir;
 
-    for (size_t i = 0; i != 4; ++i) {
-      size_t x_ = x + i * x_dir;
-      size_t y_ = y + i * y_dir;
+    if (x_ < side && y_ < side) {
+      long pos = y_ * side + x_;
 
-      t_point pp = (CAPTURES[player][j] >> (i * 8)) & 0xFF;
-
-      if (x_ < side && y_ < side && field[y_ * side + x_] == pp)
-        continue;
-      else {
-        is_capture = false;
-        break;
-      };
+      line = line << 2;
+      if (field[pos])
+        line = line | (field[pos] == player ? 0b01 : 0b10);
+    } else {
+      return false;
     }
-    if (is_capture)
-      return true;
   }
-  return false;
+  return line == X_OX || line == XO_X;
 }
 
 
@@ -138,7 +128,7 @@ bool is_possible_capture(t_point* field, size_t side, size_t x, size_t y, t_colo
     return true;
 
   // vertical
-  if (is_capture(field, side, x, y - 1, 0, 1, player) || is_capture(field, side,x, y - 2, 0, 1, player))
+  if (is_capture(field, side, x, y - 1, 0, 1, player) || is_capture(field, side, x, y - 2, 0, 1, player))
     return true;
 
   // diagonal top-left -> bottom-right
@@ -159,9 +149,9 @@ bool not_forbidden(t_point* field, size_t side, size_t x, size_t y, t_color play
 }
 
 
-double pre_evaluate_step(t_point* field, size_t side, size_t x, size_t y, t_color player) {
+long pre_evaluate_step(t_point* field, size_t side, size_t x, size_t y, t_color player) {
 
-	double score = 0.0;
+	long score = 0;
 
 	for (long i = 0; i != 8; ++i) {
 

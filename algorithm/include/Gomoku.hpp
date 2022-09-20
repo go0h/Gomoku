@@ -26,8 +26,8 @@ public:
 
   typedef enum    s_difficult {
     EASY    = 4,
-    MEDIUM  = 7,
-    HARD    = 11
+    MEDIUM  = 6,
+    HARD    = 9
   }               t_difficult;
 
   typedef struct  s_move_eval
