@@ -9,6 +9,7 @@
 #include <iostream>
 #include <random>
 #include "Gomoku.hpp"
+#include "utils.hpp"
 
 
 using Dist = std::uniform_int_distribution<size_t>;
@@ -21,7 +22,7 @@ long DIRECTIONS[8][2] = {
 };
 
 
-size_t is_free_tree(size_t line) {
+static size_t is_free_tree(size_t line) {
 
   switch (line & 0b111111111111)
   {
@@ -39,7 +40,9 @@ size_t is_free_tree(size_t line) {
   return 0;
 }
 
-size_t get_free_three_by_dir(t_point* field, long side, long x, long y, long x_dir, long y_dir, t_color opponent) {
+
+static size_t get_free_three_by_dir(t_point* field, long side,
+                                    long x, long y, long x_dir, long y_dir, t_color opponent) {
 
   size_t three_num = 0;
 
@@ -99,7 +102,8 @@ size_t get_num_of_free_threes(t_point* field, size_t side, size_t x, size_t y, t
   return three_num;
 }
 
-size_t is_capture(t_point* field, size_t side, long x, long y, long x_dir, long y_dir, t_color player) {
+
+static size_t is_capture(t_point* field, size_t side, long x, long y, long x_dir, long y_dir, t_color player) {
 
   size_t line = 0;
 
@@ -143,13 +147,13 @@ bool is_possible_capture(t_point* field, size_t side, size_t x, size_t y, t_colo
 }
 
 
-bool not_forbidden(t_point* field, size_t side, size_t x, size_t y, t_color player) {
+static bool not_forbidden(t_point* field, size_t side, size_t x, size_t y, t_color player) {
   return get_num_of_free_threes(field, side, x, y, player) < 2 && \
         !is_possible_capture(field, side, x, y, player);
 }
 
 
-long pre_evaluate_step(t_point* field, size_t side, size_t x, size_t y, t_color player) {
+static long pre_evaluate_step(t_point* field, size_t side, size_t x, size_t y, t_color player) {
 
 	long score = 0;
 
@@ -173,18 +177,6 @@ long pre_evaluate_step(t_point* field, size_t side, size_t x, size_t y, t_color 
 		score += points_in_row;
 	}
 	return score;
-}
-
-
-int compare_moves(const void* elem1, const void* elem2) {
-  Gomoku::t_move_eval* m1 = (Gomoku::t_move_eval*)elem1;
-  Gomoku::t_move_eval* m2 = (Gomoku::t_move_eval*)elem2;
-
-	if (m1->score < m2->score)
-    return 1;
-  else if (m1->score > m2->score)
-    return -1;
-  return 0;
 }
 
 
@@ -237,6 +229,6 @@ Gomoku::t_move_eval* Gomoku::_get_possible_moves(size_t depth, t_color player) {
     num_moves++;
   }
 
-  qsort(pm, num_moves, sizeof(t_move_eval), &compare_moves);
+  qsort(pm, num_moves, sizeof(t_move_eval), &compare_moves_desc);
   return pm;
 }

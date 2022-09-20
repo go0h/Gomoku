@@ -20,7 +20,7 @@ static double get_catch_score(int n) {
 	}
 }
 
-MakeTurn* Gomoku::minimax() {
+t_coord Gomoku::minimax() {
 
   t_coord best;
   double  alpha = MINUS_INF;
@@ -41,6 +41,9 @@ MakeTurn* Gomoku::minimax() {
     if (_depth_state[_difficult].num_captures)
       score += get_catch_score(_captures[_player]);
 
+    // для отправки наилучших ходов
+    possible_moves[i].score = score;
+
     _remove_move_and_captures(_board, _difficult, move.x, move.y, _player);
 
     if (-score > alpha) {
@@ -48,9 +51,7 @@ MakeTurn* Gomoku::minimax() {
       best = { move.x, move.y };
     }
   }
-  _set_move_and_catch(_board, _difficult, best.x, best.y, _player);
-
-  return _create_turn(best);
+  return best;
 }
 
 
@@ -149,9 +150,9 @@ void Gomoku::_remove_move_and_captures(Board& state, size_t depth, size_t x, siz
 
 MakeTurn* Gomoku::_create_turn(t_coord best_move) {
 
-  MakeTurn*    m = new MakeTurn();
-  t_move_eval* possible_moves = _get_possible_moves(_difficult, _player);
+  t_move_eval* possible_moves = _depth_state[_difficult].poss_moves;
   size_t       num_moves = _depth_state[_difficult].num_moves;
+  MakeTurn*    m = new MakeTurn();
 
   m->position = _board.coord_to_pos(best_move);
   m->color = _color2str[_player];

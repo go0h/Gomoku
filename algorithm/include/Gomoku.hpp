@@ -55,7 +55,7 @@ public:
   /*
    *  Minimax
    */
-  MakeTurn*   minimax();
+  t_coord     minimax();
   double      minimax(Board& state, size_t depth, t_color player, t_color opponent, double low, double high);
 
 
@@ -84,7 +84,6 @@ private:
    *  Utils
    */
   void _print_config();
-  void _switch_player() { _player = (_player == WHITE ? BLACK : WHITE); }
 
 
   t_gomoku_mode                 _mode;

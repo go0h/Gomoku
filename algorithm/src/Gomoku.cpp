@@ -58,11 +58,21 @@ Gomoku::~Gomoku() {
 
 std::string Gomoku::process(GomokuMethod::pointer gm) {
 
-  method        method_ptr = _commands[gm->name];
-  GomokuMethod  res = ((this->*(method_ptr))(gm->arguments));
+  GomokuMethod  res;
 
-  if (_mode == PvP)
-    _switch_player();
+  if (_mode == PvE) {
+
+    method method_ptr = _commands[gm->name];
+    res = ((this->*(method_ptr))(gm->arguments));
+
+  } else {
+
+    if (gm->name == "make_turn")
+      gm->name = "print_hints";
+
+    method method_ptr = _commands[gm->name];
+    res = ((this->*(method_ptr))(gm->arguments));
+  }
 
   #ifdef DEBUG
     _board.printBoard();
@@ -79,11 +89,13 @@ GomokuMethod Gomoku::_start_game(MethodArgs::pointer args) {
 
   _mode = st->mode == "PvP" ? PvP : PvE;
   _player = st->player_color == "WHITE" ? BLACK : WHITE;
-  _difficult = EASY;
 
-  if (st->difficult == "MEDIUM")
+  // если мод PvP подсказки всегда на EASY
+  if (st->difficult == "EASY" || _mode == PvP)
+    _difficult = EASY;
+  else if (st->difficult == "MEDIUM")
     _difficult = MEDIUM;
-  else if (st->difficult == "HARD")
+  else
     _difficult = HARD;
 
   _board = Board(st->board_size);
@@ -93,16 +105,16 @@ GomokuMethod Gomoku::_start_game(MethodArgs::pointer args) {
     _print_config();
   #endif
 
-  if (_player == WHITE)
+  // первый ход ничего не делаем, если начинаем вторыми или игра PvP
+  if (_player == WHITE || _mode == PvP)
     return { "start_game", args };
 
   // если бот начинает первым
-  MakeTurn* move = minimax();
+  t_coord best = minimax();
 
-  _board(move->position) = _player;
-  for (std::string& capture : move->captures) {
-    _board(capture) = EMPTY;
-  }
+  _set_move_and_catch(_board, _difficult, best.x, best.y, _player);
+
+  MakeTurn* move = _create_turn(best);
 
   return { "make_turn", MethodArgs::pointer(move) };
 }
@@ -118,7 +130,7 @@ GomokuMethod Gomoku::_back(MethodArgs::pointer args) {
   for (std::string& capture : back->captures) {
     _board(capture) = restore_color;
   }
-  _captures[_str2color[back->color]] += back->captures.size();
+  _captures[_str2color[back->color]] -= back->captures.size();
 
   return { "back", args };
 }
@@ -146,20 +158,43 @@ GomokuMethod Gomoku::_make_turn(MethodArgs::pointer args) {
   }
   _captures[opponent] += turn->captures.size();
 
-  MakeTurn* move = minimax();
+  t_coord best = minimax();
 
-  _board(move->position) = _player;
-  for (std::string& capture : move->captures) {
-    _board(capture) = EMPTY;
-  }
+  _set_move_and_catch(_board, _difficult, best.x, best.y, _player);
+
+  MakeTurn* move = _create_turn(best);
 
   return { "make_turn", MethodArgs::pointer(move) };
 }
 
 
-//TODO
 GomokuMethod Gomoku::_print_hints(MethodArgs::pointer args) {
-  return { "print_hints", args };
+
+  MakeTurn* turn = dynamic_cast<MakeTurn*>(args.get());
+
+  t_color opponent = _str2color[turn->color];
+  _board(turn->position) = opponent;
+
+  for (std::string& capture : turn->captures) {
+    _board(capture) = EMPTY;
+  }
+  _captures[opponent] += turn->captures.size();
+
+  _player = opponent == WHITE ? BLACK : WHITE;
+
+  minimax();
+
+  qsort(_depth_state[_difficult].poss_moves, _depth_state[_difficult].num_moves,
+        sizeof(t_move_eval), &compare_moves_asc);
+
+  Hints* hint = new Hints();
+
+  for (size_t i = 0; i < 5 && i < _depth_state[_difficult].num_moves; ++i) {
+    t_move_eval move = _depth_state[_difficult].poss_moves[i];
+    hint->hints.push_back(_board.coord_to_pos(move.x, move.y));
+  }
+
+  return { "print_hints", MethodArgs::pointer(hint) };
 }
 
 

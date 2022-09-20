@@ -25,4 +25,8 @@ void  throw_if_true(bool result)  {
     throw Exception();
 }
 
+int compare_moves_desc(const void* elem1, const void* elem2);
+
+int compare_moves_asc(const void* elem1, const void* elem2);
+
 #endif  // UTILS_HPP_
