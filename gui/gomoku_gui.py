@@ -1,12 +1,9 @@
 import json
-from operator import le
-import re
 import tkinter as ttk
 import webbrowser as wb
 
 from threading import Thread
-from gui import BoardGui, board
-from gui import GameConfig
+from gui import BoardGui, GameConfig
 
 from constants import (
     WIN_HEIGHT, WIN_WIDTH,
@@ -132,8 +129,8 @@ class GomokuGui:
         color_l.place(relx=.65, rely=.59, anchor="center")
 
         color = ttk.StringVar()
-        color.set("BLACK")
-        r3 = ttk.OptionMenu(frame, color, "BLACK", "WHITE")
+        color.set("WHITE")
+        r3 = ttk.OptionMenu(frame, color, "WHITE", "BLACK")
         r3.configure(font=BUTTON_FONT,
                      width=OPTION_MENU_WIDTH, height=OPTION_MENU_HEIGHT,
                      bg=BUTTON_COLOR, bd=4, cursor="hand2")

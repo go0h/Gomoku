@@ -1,7 +1,7 @@
 import time
 import tkinter as ttk
 import json
-from gui.player import Player
+from player import Player
 from piece import Piece
 from board import Board
 

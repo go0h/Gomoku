@@ -15,7 +15,7 @@ void GomokuGuiConnection::start() {
 
 
 void GomokuGuiConnection::_async_read() {
-  _socket.async_receive(buffer(_data, 4096),
+  _socket.async_receive(buffer(_data, DATA_LENGTH),
                         boost::bind(&GomokuGuiConnection::_handle_read, this,
                                     placeholders::error,
                                     placeholders::bytes_transferred));

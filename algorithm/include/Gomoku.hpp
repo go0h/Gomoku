@@ -16,7 +16,7 @@ class Gomoku
 
 public:
 
-  typedef MethodArgs::pointer (Gomoku::*method)(MethodArgs::pointer);
+  typedef GomokuMethod (Gomoku::*method)(MethodArgs::pointer);
 
 
   typedef enum    s_gomoku_mode {
@@ -64,20 +64,20 @@ private:
   /*
    *  Methods
    */
-  MethodArgs::pointer _back(MethodArgs::pointer args);
-  MethodArgs::pointer _start_game(MethodArgs::pointer args);
-  MethodArgs::pointer _end_game(MethodArgs::pointer args);
-  MethodArgs::pointer _make_turn(MethodArgs::pointer args);
-  MethodArgs::pointer _print_hints(MethodArgs::pointer args);
-  MethodArgs::pointer _winner(MethodArgs::pointer args);
+  GomokuMethod _back(MethodArgs::pointer args);
+  GomokuMethod _start_game(MethodArgs::pointer args);
+  GomokuMethod _end_game(MethodArgs::pointer args);
+  GomokuMethod _make_turn(MethodArgs::pointer args);
+  GomokuMethod _print_hints(MethodArgs::pointer args);
+  GomokuMethod _winner(MethodArgs::pointer args);
 
   /*
    *  minimax utils
    */
-  t_move_eval*      _get_possible_moves(size_t depth, t_color player);
-  void              _set_move_and_catch(Board& state, size_t depth, size_t x, size_t y, t_color player);
-  void              _remove_move_and_captures(Board& state, size_t depth, size_t x, size_t y, t_color player);
-  MakeTurn*         _create_turn(t_coord best_move);
+  t_move_eval* _get_possible_moves(size_t depth, t_color player);
+  void         _set_move_and_catch(Board& state, size_t depth, size_t x, size_t y, t_color player);
+  void         _remove_move_and_captures(Board& state, size_t depth, size_t x, size_t y, t_color player);
+  MakeTurn*    _create_turn(t_coord best_move);
 
 
   /*

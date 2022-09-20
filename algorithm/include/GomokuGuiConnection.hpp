@@ -1,6 +1,8 @@
 #ifndef TCP_CONNECTION_HPP_
 # define TCP_CONNECTION_HPP_
 
+# define DATA_LENGTH 4096
+
 # include <boost/asio.hpp>
 # include <boost/bind.hpp>
 # include "utils.hpp"
@@ -43,7 +45,7 @@ class GomokuGuiConnection : public std::enable_shared_from_this<GomokuGuiConnect
   unsigned                     _id;
   boost::asio::ip::tcp::socket _socket;
   Gomoku                       _game;
-  char                         _data[4096];
+  char                         _data[DATA_LENGTH];
 
 };
 

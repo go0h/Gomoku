@@ -46,6 +46,7 @@ Gomoku::Gomoku(t_gomoku_mode mode, t_color color, t_difficult difficult, size_t 
 
 }
 
+
 Gomoku::~Gomoku() {
 
   for (size_t i = 0; i <= HARD; ++i) {
@@ -58,8 +59,9 @@ Gomoku::~Gomoku() {
 
 
 std::string Gomoku::process(GomokuMethod::pointer gm) {
-  method met = _commands[gm->name];
-  MethodArgs::pointer arguments = ((this->*(met))(gm->arguments));
+
+  method        method_ptr = _commands[gm->name];
+  GomokuMethod  res = ((this->*(method_ptr))(gm->arguments));
 
   if (_mode == PvP)
     _switch_player();
@@ -69,13 +71,11 @@ std::string Gomoku::process(GomokuMethod::pointer gm) {
     std::cout << std::endl;
   #endif
 
-  GomokuMethod res = { gm->name, arguments };
-
   return res.as_json().dump();
 }
 
 
-MethodArgs::pointer Gomoku::_start_game(MethodArgs::pointer args) {
+GomokuMethod Gomoku::_start_game(MethodArgs::pointer args) {
 
   StartGame* st = dynamic_cast<StartGame*>(args.get());
 
@@ -95,11 +95,22 @@ MethodArgs::pointer Gomoku::_start_game(MethodArgs::pointer args) {
     _print_config();
   #endif
 
-  return args;
+  if (_player == WHITE)
+    return { "start_game", args };
+
+  // если бот начинает первым
+  MakeTurn* move = minimax();
+
+  _board(move->position) = _player;
+  for (std::string& capture : move->captures) {
+    _board(capture) = EMPTY;
+  }
+
+  return { "make_turn", MethodArgs::pointer(move) };
 }
 
 
-MethodArgs::pointer Gomoku::_back(MethodArgs::pointer args) {
+GomokuMethod Gomoku::_back(MethodArgs::pointer args) {
 
   Back* back = dynamic_cast<Back*>(args.get());
 
@@ -111,21 +122,21 @@ MethodArgs::pointer Gomoku::_back(MethodArgs::pointer args) {
   }
   _captures[_str2color[back->color]] += back->captures.size();
 
-  return args;
+  return { "back", args };
 }
 
 
-MethodArgs::pointer Gomoku::_winner(MethodArgs::pointer args) {
-  return args;
+GomokuMethod Gomoku::_winner(MethodArgs::pointer args) {
+  return { "winner", args };
 }
 
 
-MethodArgs::pointer Gomoku::_end_game(MethodArgs::pointer args) {
-  return args;
+GomokuMethod Gomoku::_end_game(MethodArgs::pointer args) {
+  return { "end_game", args };
 }
 
 
-MethodArgs::pointer Gomoku::_make_turn(MethodArgs::pointer args) {
+GomokuMethod Gomoku::_make_turn(MethodArgs::pointer args) {
 
   MakeTurn* turn = dynamic_cast<MakeTurn*>(args.get());
 
@@ -144,13 +155,13 @@ MethodArgs::pointer Gomoku::_make_turn(MethodArgs::pointer args) {
     _board(capture) = EMPTY;
   }
 
-  return MethodArgs::pointer(move);
+  return { "make_turn", MethodArgs::pointer(move) };
 }
 
 
 //TODO
-MethodArgs::pointer Gomoku::_print_hints(MethodArgs::pointer args) {
-  return args;
+GomokuMethod Gomoku::_print_hints(MethodArgs::pointer args) {
+  return { "print_hints", args };
 }
 
 

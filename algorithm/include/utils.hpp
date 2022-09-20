@@ -18,16 +18,11 @@
 # define CYAN    "\033[1;96m"
 # define RESET   "\033[0m"
 
+
 template<class Exception>
 void  throw_if_true(bool result)  {
   if (result)
     throw Exception();
 }
-
-void fill_moves(unsigned board_size);
-std::string get_random_move();
-std::string get_and_remove_random_move();
-void remove_move(std::string move);
-
 
 #endif  // UTILS_HPP_
