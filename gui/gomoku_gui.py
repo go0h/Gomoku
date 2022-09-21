@@ -82,7 +82,7 @@ class GomokuGui:
         ch_mode.place(relx=.5, rely=.3, anchor="center")
 
         b1 = ttk.Button(frame,
-                        text="Player VS AI",
+                        text="Player  vs  Bot",
                         font=BUTTON_FONT,
                         width=30, height=1,
                         bg=BUTTON_COLOR,
@@ -91,7 +91,7 @@ class GomokuGui:
         b1.place(relx=.5, rely=.4, anchor="center")
 
         b2 = ttk.Button(frame,
-                        text="Player VS Player",
+                        text="Player  vs  Player",
                         font=BUTTON_FONT,
                         width=30, height=1,
                         bg=BUTTON_COLOR,

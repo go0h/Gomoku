@@ -8,7 +8,7 @@ from board import Board
 from constants import (
     PAD_FROM_WIN,
     BACKGROUND_COLOR, BOARD_COLOR,
-    FONT, LABEL_FONT_SIZE, LABEL_FONT
+    FONT, LABEL_FONT_SIZE, LABEL_FONT, WINNER_COLOR
 )
 
 
@@ -35,6 +35,7 @@ class BoardGui:
         self._time_spend_label = None
         self._time_spend = time.perf_counter()
         self._winner = None
+        self._winner_name = None
         self._win_strike = []
 
         # player properties
@@ -138,9 +139,9 @@ class BoardGui:
         if self._config.get_mode() == "PvE":
             if self._config.get_first_move() == "BLACK":
                 self._p1 = Player(self._info_frame, "Player", "black")
-                self._p2 = Player(self._info_frame, f"AI {self._config.get_difficult().lower()}", "white")
+                self._p2 = Player(self._info_frame, f"Bot {self._config.get_difficult().lower()}", "white")
             else:
-                self._p1 = Player(self._info_frame, f"AI {self._config.get_difficult().lower()}", "black")
+                self._p1 = Player(self._info_frame, f"Bot {self._config.get_difficult().lower()}", "black")
                 self._p2 = Player(self._info_frame, "Player", "white")
         else:
             self._p1 = Player(self._info_frame, "Player #1", "black")
@@ -159,15 +160,24 @@ class BoardGui:
         self._time_spend_label.config(text="0.00")
 
     def print_winner(self, strike, **kwargs):
-        self._winner = ttk.Label(self._info_frame, text="Winner",
-                                 font=[FONT, LABEL_FONT_SIZE, "underline"],
+        self._winner = ttk.Label(self._info_frame, text="Winner:",
+                                 font=[FONT, LABEL_FONT_SIZE, "underline", "bold"],
                                  bg=BOARD_COLOR)
         self._winner.place(relx=.1, rely=.47, anchor="w")
-        self._board_canvas.unbind('<Button-1>')
+
+        self._winner_name = ttk.Label(self._info_frame, text=self._turn.get(),
+                        font=[FONT, LABEL_FONT_SIZE, "underline", "bold"],
+                        fg=WINNER_COLOR,
+                        bg=BOARD_COLOR)
+        self._winner_name.place(relx=.7, rely=.47, anchor="center")
+
+        self.delete_hints()
         self._print_win_strike(strike)
+        self._show_move_time()
+        self._board_canvas.unbind('<Button-1>')
         self._moves.set(self._moves.get() + 1)
+
         self._send_func(method="winner", arguments={"winner": self._cur_player._color})
-        self._stop_move_time()
 
     def print_forbidden_move(self, x, y):
         p = BoardGui.create_circle(self._board_canvas, x, y, self._piece_radius, fill="red")
@@ -187,7 +197,7 @@ class BoardGui:
 
     def make_turn_on_event(self, event):
         """Event on-click on board to set Piece"""
-        if self._cur_player.get_name().startswith("AI"):
+        if self._cur_player.get_name().startswith("Bot"):
             return
         self.delete_hints()
         x = BoardGui.round_cell(event.x - self._padding, self._cell_width) + self._padding
@@ -256,6 +266,8 @@ class BoardGui:
         if self._winner is not None:
             self._show_move_time()
             self._delete_win_strike()
+            self._switch_player()
+
         if self._moves.get() != 0:
             p = next(self._pieces[i] for i in range(len(self._pieces) - 1, -1, -1) if not self._pieces[i].is_captured())
             self.delete_piece(p)
@@ -299,6 +311,8 @@ class BoardGui:
         self._board_canvas.bind('<Button-1>', self.make_turn_on_event)
         self._winner.destroy()
         self._winner = None
+        self._winner_name.destroy()
+        self._winner_name = None
         for piece in self._win_strike:
             self._board_canvas.delete(piece.get_piece())
         self._win_strike = []
