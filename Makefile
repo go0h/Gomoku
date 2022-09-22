@@ -6,7 +6,7 @@
 #    By: astripeb <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2020/05/31 20:08:29 by astripeb          #+#    #+#              #
-#    Updated: 2022/09/20 21:40:23 by astripeb         ###   ########.fr        #
+#    Updated: 2022/09/22 14:41:55 by astripeb         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -22,13 +22,14 @@ OBJ_DIR			:= ./obj
 
 SRCS				:= main.cpp Server.cpp GomokuGuiConnection.cpp Gomoku.cpp \
 							 serialization.cpp Board.cpp GomokuException.cpp \
-							 minimax.cpp possible_moves.cpp state_evaluation.cpp utils.cpp
+							 Minimax.cpp possible_moves.cpp state_evaluation.cpp utils.cpp \
+							 minimax_functions.cpp
 
 
 OBJ					:= $(SRCS:.cpp=.o)
 
 CXX					= g++
-CXXFLAGS		?= -Wall -Werror -Wextra -std=c++14
+CXXFLAGS		?= -Wall -Werror -Wextra -std=c++14 -O3
 IFLAGS			:= -I$(INC_DIR)
 DEPEND			:= -MD -MT
 
@@ -37,7 +38,7 @@ ifeq ($(OS), Darwin)
   CXX = clang++
   IFLAGS += -I${HOME}/homebrew/include
 else
-	LIBS = -lpthread -lboost_system
+	LIBS = -pthread -lboost_system
 endif
 
 ifeq ($(DEBUG), 1)

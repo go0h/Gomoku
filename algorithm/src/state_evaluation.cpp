@@ -244,20 +244,4 @@ double evaluate_state(Board& state, size_t& is_win, t_color player, bool is_play
 
   return (double)(evaluate_horizontal_vertical(field, side, is_win, player, opponent, is_player_turn)
                 + evaluate_diagonal(field, side, is_win, player, opponent, is_player_turn));
-                // - evaluate_horizontal_vertical(field, side, is_win, opponent, !is_player_turn)
-                // - evaluate_diagonal(field, side, is_win, opponent, !is_player_turn));
-
-  // double player_hv_score = evaluate_horizontal_vertical(field, side, is_win, player, is_player_turn);
-  // double player_d_score = evaluate_diagonal(field, side, is_win, player, is_player_turn);
-  // double opponent_hv_score = evaluate_horizontal_vertical(field, side, is_win, opponent, !is_player_turn);
-  // double opponent_d_score = evaluate_diagonal(field, side, is_win, opponent, !is_player_turn);
-
-  // std::cout << "player_hv_score: " << player_hv_score << std::endl;
-  // std::cout << "player_d_score: " << player_d_score << std::endl;
-  // std::cout << "opponent_hv_score: " << opponent_hv_score << std::endl;
-  // std::cout << "opponent_d_score: " << opponent_d_score << std::endl;
-
-  // double score = player_hv_score + player_d_score - opponent_hv_score - opponent_d_score;
-
-  // return score;
 }

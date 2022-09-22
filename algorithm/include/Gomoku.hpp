@@ -2,14 +2,10 @@
 #ifndef GOMOKU_HPP_
 # define GOMOKU_HPP_
 
-# define PLUS_INF  (1.0 / 0.0)
-# define MINUS_INF (-1.0 / 0.0)
-
-#include <nlohmann/json.hpp>
 #include "Board.hpp"
 #include "gomoku_methods.hpp"
+#include "Minimax.hpp"
 
-extern ssize_t DIRECTIONS[8][2];
 
 class Gomoku
 {
@@ -17,7 +13,6 @@ class Gomoku
 public:
 
   typedef GomokuMethod (Gomoku::*method)(MethodArgs::pointer);
-
 
   typedef enum    s_gomoku_mode {
     PvE,
@@ -30,34 +25,11 @@ public:
     HARD    = 9
   }               t_difficult;
 
-  typedef struct  s_move_eval
-  {
-    double    score;
-    size_t    x;
-    size_t    y;
-  }               t_move_eval;
-
-  typedef struct  s_depth_state
-  {
-    t_move_eval*          poss_moves;
-    size_t                num_moves;
-    size_t*               captures;
-    size_t                num_captures;
-  }               t_depth_state;
-
   Gomoku();
   Gomoku(t_gomoku_mode mode, t_color color, t_difficult difficult, size_t board_size);
   ~Gomoku();
 
   std::string process(GomokuMethod::pointer gm);
-
-
-  /*
-   *  Minimax
-   */
-  t_coord     minimax();
-  double      minimax(Board& state, size_t depth, t_color player, t_color opponent, double low, double high);
-
 
 private:
 
@@ -74,26 +46,20 @@ private:
   /*
    *  minimax utils
    */
-  t_move_eval* _get_possible_moves(size_t depth, t_color player);
-  void         _set_move_and_catch(Board& state, size_t depth, size_t x, size_t y, t_color player);
-  void         _remove_move_and_captures(Board& state, size_t depth, size_t x, size_t y, t_color player);
-  MakeTurn*    _create_turn(t_coord best_move);
-
+  std::vector<std::string> _set_move_and_get_captures(Board& state, size_t x, size_t y, t_color player);
+  MakeTurn*                _create_turn(std::vector<t_move_eval>& moves);
 
   /*
    *  Utils
    */
   void _print_config();
 
-
   t_gomoku_mode                 _mode;
   t_color                       _player;
   t_difficult                   _difficult;
   Board                         _board;
-  t_depth_state*                _depth_state = nullptr;
   int                           _captures[3] = { 0, 0, 0 };
-
-  std::map<size_t, double>      _score_states;
+  Minimax                       _minimax;
 
   std::map<std::string, method> _commands =
   {
@@ -112,7 +78,5 @@ private:
   };
   std::vector<std::string> _color2str = { "", "white", "black" };
 };
-
-double evaluate_state(Board& state, size_t& is_win, t_color player, bool is_player_turn);
 
 #endif // GOMOKU_HPP_

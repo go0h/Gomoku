@@ -7,6 +7,7 @@
 # include <iostream>
 # include <sstream>
 # include <string>
+# include "Board.hpp"
 
 
 // colors for beauty
@@ -18,6 +19,30 @@
 # define CYAN    "\033[1;96m"
 # define RESET   "\033[0m"
 
+
+typedef struct  s_move_eval
+{
+  double    score;
+  size_t    x;
+  size_t    y;
+}               t_move_eval;
+
+
+typedef struct  s_depth_state
+{
+  t_move_eval*          poss_moves;
+  size_t                num_moves;
+  size_t*               captures;
+  size_t                num_captures;
+}               t_depth_state;
+
+
+typedef struct    s_game_state
+{
+  int                    captures[3];
+  t_depth_state*         depth_state;
+  Board                  board;
+}                 t_game_state;
 
 template<class Exception>
 void  throw_if_true(bool result)  {

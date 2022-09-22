@@ -4,56 +4,25 @@
 
 using json = nlohmann::json;
 
+#define NUM_THREADS 4
 
 Gomoku::Gomoku() :
   _mode(PvE),
   _player(WHITE),
   _difficult(EASY),
-  _board(Board(19))
-{
-  _depth_state = new t_depth_state[HARD + 1];
-
-  _score_states = std::map<size_t, double>();
-
-  for (size_t i = 0; i <= HARD; ++i) {
-    _depth_state[i].num_moves = 0;
-    _depth_state[i].poss_moves = new t_move_eval[_board.getSide() * _board.getSide()];
-
-    _depth_state[i].num_captures = 0;
-    _depth_state[i].captures = new size_t[16];
-  }
-}
+  _board(Board(19)),
+  _minimax(Minimax(NUM_THREADS)) { }
 
 
 Gomoku::Gomoku(t_gomoku_mode mode, t_color color, t_difficult difficult, size_t board_size) :
   _mode(mode),
   _player(color),
   _difficult(difficult),
-  _board(Board(board_size))
-{
-  _depth_state = new t_depth_state[HARD + 1];
-
-  _score_states = std::map<size_t, double>();
-
-  for (size_t i = 0; i <= HARD; ++i) {
-    _depth_state[i].num_moves = 0;
-    _depth_state[i].poss_moves = new t_move_eval[_board.getSide() * _board.getSide()];
-
-    _depth_state[i].num_captures = 0;
-    _depth_state[i].captures = new size_t[16];
-  }
-}
+  _board(Board(board_size)),
+  _minimax(Minimax(NUM_THREADS)) { }
 
 
-Gomoku::~Gomoku() {
-
-  for (size_t i = 0; i <= HARD; ++i) {
-    delete[] _depth_state[i].poss_moves;
-    delete[] _depth_state[i].captures;
-  }
-  delete[] _depth_state;
-  _depth_state = nullptr;
-}
+Gomoku::~Gomoku() { }
 
 
 std::string Gomoku::process(GomokuMethod::pointer gm) {
@@ -109,12 +78,13 @@ GomokuMethod Gomoku::_start_game(MethodArgs::pointer args) {
   if (_player == WHITE || _mode == PvP)
     return { "start_game", args };
 
+  t_color opponent = _player == WHITE ? BLACK : WHITE;
+
   // если бот начинает первым
-  t_coord best = minimax();
+  std::vector<t_move_eval> moves = _minimax.run(
+    _board, _difficult, _player, _captures[_player], _captures[opponent]);
 
-  _set_move_and_catch(_board, _difficult, best.x, best.y, _player);
-
-  MakeTurn* move = _create_turn(best);
+  MakeTurn* move = _create_turn(moves);
 
   return { "make_turn", MethodArgs::pointer(move) };
 }
@@ -158,11 +128,10 @@ GomokuMethod Gomoku::_make_turn(MethodArgs::pointer args) {
   }
   _captures[opponent] += turn->captures.size();
 
-  t_coord best = minimax();
+  std::vector<t_move_eval> moves = _minimax.run(
+    _board, _difficult, _player, _captures[_player], _captures[opponent]);
 
-  _set_move_and_catch(_board, _difficult, best.x, best.y, _player);
-
-  MakeTurn* move = _create_turn(best);
+  MakeTurn* move = _create_turn(moves);
 
   return { "make_turn", MethodArgs::pointer(move) };
 }
@@ -182,19 +151,72 @@ GomokuMethod Gomoku::_print_hints(MethodArgs::pointer args) {
 
   _player = opponent == WHITE ? BLACK : WHITE;
 
-  minimax();
-
-  qsort(_depth_state[_difficult].poss_moves, _depth_state[_difficult].num_moves,
-        sizeof(t_move_eval), &compare_moves_asc);
+  std::vector<t_move_eval> moves = _minimax.run(
+    _board, _difficult, _player, _captures[_player], _captures[opponent]);
 
   Hints* hint = new Hints();
 
-  for (size_t i = 0; i < 5 && i < _depth_state[_difficult].num_moves; ++i) {
-    t_move_eval move = _depth_state[_difficult].poss_moves[i];
-    hint->hints.push_back(_board.coord_to_pos(move.x, move.y));
+  for (size_t i = 0; i < 5 && i < moves.size(); ++i) {
+    hint->hints.push_back(_board.coord_to_pos(moves[i].x, moves[i].y));
   }
 
   return { "print_hints", MethodArgs::pointer(hint) };
+}
+
+
+MakeTurn* Gomoku::_create_turn(std::vector<t_move_eval>& moves) {
+
+  MakeTurn*    m = new MakeTurn();
+
+  t_move_eval best_move = *moves.begin();
+  moves.erase(moves.begin());
+
+  m->position = _board.coord_to_pos(best_move.x, best_move.y);
+  m->color = _color2str[_player];
+  m->captures = _set_move_and_get_captures(_board, best_move.x, best_move.y, _player);
+
+  for (size_t i = 0; i != moves.size(); ++i) {
+    m->hints.push_back(_board.coord_to_pos(moves[i].x, moves[i].y));
+  }
+
+  return m;
+}
+
+
+std::vector<std::string> Gomoku::_set_move_and_get_captures(Board& state, size_t x, size_t y, t_color player) {
+
+  size_t                   side = state.getSide();
+  t_color                  opponent = player == WHITE ? BLACK : WHITE;
+  std::vector<std::string> captures = std::vector<std::string>();
+
+  state(x, y) = player;
+
+  for (size_t i = 0; i != 8; ++i) {
+
+    size_t x_dir = DIRECTIONS[i][0];
+    size_t y_dir = DIRECTIONS[i][1];
+
+    size_t x3 = x + x_dir * 3;
+    size_t y3 = y + y_dir * 3;
+
+    if (x3 < side && y3 < side && state(x3, y3) == player) {
+
+      size_t y1 = (y + y_dir * 1);
+      size_t x1 = (x + x_dir * 1);
+
+      size_t y2 = (y + y_dir * 2);
+      size_t x2 = (x + x_dir * 2);
+
+      if (state(x1, y1) == opponent && state(x2, y2) == opponent) {
+        state(x1, y1) = EMPTY;
+        state(x2, y2) = EMPTY;
+        captures.push_back(state.coord_to_pos(x1, y1));
+        captures.push_back(state.coord_to_pos(x2, y2));
+      }
+    }
+  }
+
+  return captures;
 }
 
 

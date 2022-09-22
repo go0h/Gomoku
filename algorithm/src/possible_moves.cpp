@@ -8,7 +8,6 @@
 
 #include <iostream>
 #include <random>
-#include "Gomoku.hpp"
 #include "utils.hpp"
 
 
@@ -70,6 +69,7 @@ static size_t get_free_three_by_dir(t_point* field, long side,
   }
   return three_num;
 }
+
 
 size_t get_num_of_free_threes(t_point* field, size_t side, size_t x, size_t y, t_color player) {
 
@@ -180,7 +180,7 @@ static long pre_evaluate_step(t_point* field, size_t side, size_t x, size_t y, t
 }
 
 
-Gomoku::t_move_eval get_random_move(t_point* field, size_t side, t_color player) {
+t_move_eval get_random_move(t_point* field, size_t side, t_color player) {
 
   static std::default_random_engine re {};
   static Dist                       uid {};
@@ -192,16 +192,16 @@ Gomoku::t_move_eval get_random_move(t_point* field, size_t side, t_color player)
     if (field[y * side + x] == EMPTY && not_forbidden(field, side, x, y, player))
       return { 0.0, x, y };
   }
-  return { MINUS_INF, 0, 0 };
+  return { 0.0, 0, 0 };
 }
 
 
-Gomoku::t_move_eval* Gomoku::_get_possible_moves(size_t depth, t_color player) {
+t_move_eval*  get_possible_moves(t_game_state& gs, size_t depth, t_color player) {
 
-  size_t        side = _board.getSide();
-  t_point*      field = _board.getField();
-  t_move_eval*  pm = _depth_state[depth].poss_moves;
-  size_t&       num_moves = _depth_state[depth].num_moves;
+  size_t        side = gs.board.getSide();
+  t_point*      field = gs.board.getField();
+  t_move_eval*  pm = gs.depth_state[depth].poss_moves;
+  size_t&       num_moves = gs.depth_state[depth].num_moves;
   num_moves = 0;
 
   for (size_t y = 0; y != side; ++y) {
