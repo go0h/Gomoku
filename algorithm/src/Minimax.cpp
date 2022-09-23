@@ -128,6 +128,7 @@ std::vector<t_move_eval> Minimax::_get_sorted_moves(size_t depth) {
   return moves;
 }
 
+
 std::vector<t_move_eval> Minimax::run(Board board, size_t depth, t_color player, size_t p_captures, size_t o_captures) {
 
   _init_game_states(board, depth, player, p_captures, o_captures);

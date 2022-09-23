@@ -5,26 +5,25 @@
 
 
 static double get_catch_score(int n) {
-	switch (n) {
-		case 0:
-			return 0;
-		case 2:
-			return 40;
-		case 4:
-			return 500;
-		case 6:
-			return 1000;
-		case 8:
-			return 2000;
-		default:
-			return 180000;
-	}
+  switch (n) {
+    case 0:
+      return 0;
+    case 2:
+      return 40;
+    case 4:
+      return 500;
+    case 6:
+      return 1000;
+    case 8:
+      return 2000;
+    default:
+      return 180000;
+  }
 }
 
 
 void minimax_thread_f(void* gs_ptr, int player, size_t depth) {
 
-  t_coord       best;
   double        alpha = MINUS_INF;
   double        score = alpha;
   t_color       opponent = (player == WHITE ? BLACK : WHITE);
@@ -52,7 +51,6 @@ void minimax_thread_f(void* gs_ptr, int player, size_t depth) {
 
     if (-score > alpha) {
       alpha = -score;
-      best = { move.x, move.y };
     }
   }
 }
