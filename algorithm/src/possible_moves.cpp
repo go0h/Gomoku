@@ -196,12 +196,12 @@ t_move_eval get_random_move(t_point* field, size_t side, t_color player) {
 }
 
 
-t_move_eval*  get_possible_moves(t_game_state& gs, size_t depth, t_color player) {
+t_move_eval*  get_possible_moves(t_game_state* gs, size_t depth, t_color player) {
 
-  size_t        side = gs.board.getSide();
-  t_point*      field = gs.board.getField();
-  t_move_eval*  pm = gs.depth_state[depth].poss_moves;
-  size_t&       num_moves = gs.depth_state[depth].num_moves;
+  size_t        side = gs->board.getSide();
+  t_point*      field = gs->board.getField();
+  t_move_eval*  pm = gs->depth_state[depth].poss_moves;
+  size_t&       num_moves = gs->depth_state[depth].num_moves;
   num_moves = 0;
 
   for (size_t y = 0; y != side; ++y) {

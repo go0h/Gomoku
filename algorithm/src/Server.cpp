@@ -22,7 +22,6 @@ void Server::run() {
   _acceptor.async_accept(new_gui_conn->socket(),
                          boost::bind(&Server::handle_accept, this, new_gui_conn,
                                      boost::asio::placeholders::error));
-
   _service.run();
 }
 
@@ -32,4 +31,13 @@ void Server::handle_accept(GomokuGuiConnection::pointer new_connection,
     new_connection->start();
   }
   run();
+}
+
+void Server::stop() {
+  _service.post(boost::bind(&Server::handle_stop, this));
+}
+
+void Server::handle_stop() {
+  _acceptor.close();
+  _socket->close();
 }

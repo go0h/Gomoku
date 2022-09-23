@@ -16,16 +16,18 @@ public:
   ~Server();
 
   void run();
+  void stop();
 
   void handle_accept(GomokuGuiConnection::pointer new_connection,
                      const boost::system::error_code& error);
+  void handle_stop();
 
 private:
 
   Server(const Server&);
   Server& operator=(const Server&);
 
-  boost::asio::io_service           _service;
+  boost::asio::io_service          _service;
   boost::asio::ip::tcp::endpoint   _endpoint;
   boost::asio::ip::tcp::acceptor   _acceptor;
   socket_ptr                       _socket;

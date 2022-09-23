@@ -1,10 +1,11 @@
 
+#define NUM_THREADS 4
+
 #include "utils.hpp"
 #include "Gomoku.hpp"
 
 using json = nlohmann::json;
 
-#define NUM_THREADS 4
 
 Gomoku::Gomoku() :
   _mode(PvE),

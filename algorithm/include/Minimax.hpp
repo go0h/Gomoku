@@ -1,7 +1,7 @@
 #ifndef MINIMAX_HPP_
 # define MINIMAX_HPP_
 
-#include <vector>
+#include "ThreadPool.hpp"
 #include "utils.hpp"
 
 extern ssize_t DIRECTIONS[8][2];
@@ -17,9 +17,11 @@ public:
 
 private:
 
-  void init_game_states(Board board, size_t depth, t_color player, size_t p_captures, size_t o_captures);
+  void                     _init_game_states(Board board, size_t depth, t_color player, size_t p_captures, size_t o_captures);
+  std::vector<t_move_eval> _get_sorted_moves(size_t depth);
 
   size_t         _num_threads;
+  ThreadPool     _pool;
   t_game_state*  _game_state;
 };
 
