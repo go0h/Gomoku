@@ -65,37 +65,19 @@ void Minimax::_init_game_states(Board board, size_t depth, t_color player, size_
 
   // находим возможные позиции для первого хода
   t_move_eval* pm = get_possible_moves(&_game_state[0], depth, player);
-
   size_t all_moves = _game_state[0].depth_state[depth].num_moves;
-  size_t one_thread_moves = all_moves / _num_threads;
+  _game_state[0].depth_state[depth].num_moves = 0;
 
+  size_t m = 0;
   // распределяем позиции равномерно для каждого потока
-  for (size_t i = 0; i < _num_threads; ++i) {
+  while (m < all_moves) {
 
-    t_depth_state* ds = _game_state[i].depth_state;
-
-    std::memcpy(ds[depth].poss_moves,
-               &pm[i * one_thread_moves],
-                one_thread_moves * sizeof(t_move_eval));
-
-    ds[depth].num_moves = one_thread_moves;
-  }
-
-  // дописываем по одному ходу из остатка в состояния
-  if (one_thread_moves * _num_threads != all_moves) {
-
-    size_t distr_num = one_thread_moves * _num_threads;
-    size_t rest = all_moves - distr_num;
-
-    for (size_t i = 0; i < rest; ++i) {
-
+    for (size_t i = 0; i < _num_threads && m < all_moves; ++i) {
       t_depth_state* ds = _game_state[i].depth_state;
-      size_t n = ds[depth].num_moves;
 
-      std::memcpy(&ds[depth].poss_moves[n], &pm[distr_num], sizeof(t_move_eval));
+      ds[depth].poss_moves[ds[depth].num_moves] = pm[m];
       ds[depth].num_moves += 1;
-
-      distr_num++;
+      ++m;
     }
   }
 }

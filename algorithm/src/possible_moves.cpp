@@ -9,6 +9,7 @@
 #include <iostream>
 #include <random>
 #include "utils.hpp"
+#include "minimax_functions.hpp"
 
 
 using Dist = std::uniform_int_distribution<size_t>;
@@ -153,33 +154,6 @@ static bool not_forbidden(t_point* field, size_t side, size_t x, size_t y, t_col
 }
 
 
-static long pre_evaluate_step(t_point* field, size_t side, size_t x, size_t y, t_color player) {
-
-	long score = 0;
-
-	for (long i = 0; i != 8; ++i) {
-
-    size_t _x = x;
-	  size_t _y = y;
-		long x_dir = DIRECTIONS[i][0];
-		long y_dir = DIRECTIONS[i][1];
-
-    size_t points_in_row = 0;
-
-    for (;;) {
-			_x += x_dir;
-			_y += y_dir;
-			if (_x < side &&  _y < side && field[_y * side + _x] == player)
-				points_in_row = (points_in_row + 1) * 2;
-			else
-				break;
-		}
-		score += points_in_row;
-	}
-	return score;
-}
-
-
 t_move_eval get_random_move(t_point* field, size_t side, t_color player) {
 
   static std::default_random_engine re {};
@@ -202,6 +176,7 @@ t_move_eval*  get_possible_moves(t_game_state* gs, size_t depth, t_color player)
   t_point*      field = gs->board.getField();
   t_move_eval*  pm = gs->depth_state[depth].poss_moves;
   size_t&       num_moves = gs->depth_state[depth].num_moves;
+  size_t        win_flag = 0;
   num_moves = 0;
 
   for (size_t y = 0; y != side; ++y) {
@@ -215,7 +190,9 @@ t_move_eval*  get_possible_moves(t_game_state* gs, size_t depth, t_color player)
         size_t _y = y + DIRECTIONS[i][1];
         if (_x < side && _y < side && field[_y * side + _x] != EMPTY) {
           if (not_forbidden(field, side, x, y, player)) {
-            double score = pre_evaluate_step(field, side, x, y, player);
+            field[y * side + x] = player;
+            double score = evaluate_state(gs->board, win_flag, player, false);
+            field[y * side + x] = EMPTY;
             pm[num_moves] = { score, x, y };
             num_moves++;
           }
@@ -228,7 +205,7 @@ t_move_eval*  get_possible_moves(t_game_state* gs, size_t depth, t_color player)
     pm[num_moves] = get_random_move(field, side, player);
     num_moves++;
   }
-
   qsort(pm, num_moves, sizeof(t_move_eval), &compare_moves_desc);
+  num_moves = num_moves - (num_moves / 3);
   return pm;
 }

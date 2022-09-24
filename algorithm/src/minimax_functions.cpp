@@ -39,7 +39,7 @@ void minimax_thread_f(void* gs_ptr, int player, size_t depth) {
 
     set_move_and_catch(gs, depth, move.x, move.y, (t_color)player);
 
-    score = minimax_thread(gs, depth - 1, opponent, (t_color)player, alpha, PLUS_INF, !is_player_turn);
+    score = minimax_thread(gs, depth - 1, opponent, (t_color)player, PLUS_INF, alpha, !is_player_turn);
 
     if (gs->depth_state[depth].num_captures)
       score += get_catch_score(gs->captures[player]);
