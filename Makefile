@@ -23,7 +23,7 @@ OBJ_DIR			:= ./obj
 SRCS				:= main.cpp Server.cpp GomokuGuiConnection.cpp Gomoku.cpp \
 							 serialization.cpp Board.cpp GomokuException.cpp \
 							 Minimax.cpp possible_moves.cpp state_evaluation.cpp utils.cpp \
-							 minimax_functions.cpp ThreadPool.cpp
+							 minimax_functions.cpp ThreadPool.cpp move_evaluation.cpp
 
 
 OBJ					:= $(SRCS:.cpp=.o)

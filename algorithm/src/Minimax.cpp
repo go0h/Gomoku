@@ -63,6 +63,8 @@ void Minimax::_init_game_states(Board board, size_t depth, t_color player, size_
     }
   }
 
+//std::cout << "_init_game_state, player="<< player << ", depth="<< depth << std::endl;
+
   // находим возможные позиции для первого хода
   t_move_eval* pm = get_possible_moves(&_game_state[0], depth, player);
   size_t all_moves = _game_state[0].depth_state[depth].num_moves;
@@ -98,8 +100,8 @@ std::vector<t_move_eval> Minimax::_get_sorted_moves(size_t depth) {
     num_moves += num_thr_moves;
   }
 
-  // сортируем по возрастанию
-  qsort(ps, num_moves, sizeof(t_move_eval), &compare_moves_asc);
+  // сортируем по убыванию
+  qsort(ps, num_moves, sizeof(t_move_eval), &compare_moves_desc);
 
   std::vector<t_move_eval> moves = std::vector<t_move_eval>();
 

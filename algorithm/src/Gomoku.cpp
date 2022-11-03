@@ -1,6 +1,4 @@
 
-#define NUM_THREADS 4
-
 #include "utils.hpp"
 #include "Gomoku.hpp"
 

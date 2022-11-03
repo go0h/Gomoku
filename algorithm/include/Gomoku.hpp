@@ -6,6 +6,7 @@
 #include "gomoku_methods.hpp"
 #include "Minimax.hpp"
 
+#define NUM_THREADS 4
 
 class Gomoku
 {
@@ -20,9 +21,9 @@ public:
   }               t_gomoku_mode;
 
   typedef enum    s_difficult {
-    EASY    = 4,
+    EASY    = 2,
     MEDIUM  = 6,
-    HARD    = 9
+    HARD    = 8
   }               t_difficult;
 
   Gomoku();

@@ -1,248 +1,215 @@
-
-// SIX
-#define _WWWW_ 0b000101010100    // 20000 : 15000
-#define _WWWWB 0b000101010110    // 10000 : 5000
-#define BWWWW_ 0b100101010100    // 10000 : 5000
-#define _W_WW_ 0b000100010100    // 4000 : 2000
-#define _WW_W_ 0b000101000100    // 4000 : 2000
-
-// FIVE WITH SHIFT 2 BITS
-#define WWWWW  0b0101010101      // 100000
-#define W_WWW  0b0100010101      // 10000 : 5000
-#define WWW_W  0b0101010001      // 10000 : 5000
-#define WW_WW  0b0101000101      // 10000 : 5000
-#define W_W_W  0b0100010001      // 1100 : 1000
-
-// FIVE
-#define _WWW_  0b0001010100      // 4000 : 2000
-#define BWWW_  0b1001010100      // 1100 : 1000
-#define _WWWB  0b0001010110      // 1100 : 1000
-#define _W_W_  0b0001000100      // 240 : 200
-
-// FOUR
-#define _WW_   0b00010100        // 240 : 200
-#define BWW_   0b10010100        // 80 : 75
-#define _WWB   0b00010110        // 80 : 75
-
-// THREE
-#define _W_    0b000100          // 25 : 15
-#define BW_    0b100100          // 10
-#define _WB    0b000110          // 10
-
-#define PLAYER   0b01
-#define OPPONENT 0b10
-
-#define SHIFT    2
+#define LiveOne 10
+#define DeadOne 1;
+#define LiveTwo 100;
+#define DeadTwo 50;
+#define LiveThree 1000;
+#define DeadThree 500;
+#define LiveFour 10000;
+#define DeadFour 5000;
+#define Five 100000;
 
 #include <iostream>
 #include "Gomoku.hpp"
 
-
-static long evaluate(long line, size_t& is_win, bool is_player_turn) {
-
-  // SIX
-  switch (line & 0b111111111111)
-  {
-  case _WWWW_:
-    return is_player_turn ? 20000 : 10000;
-
-  case _WWWWB:
-    return is_player_turn ? 10000 : 5000;
-  case BWWWW_:
-    return is_player_turn ? 10000 : 5000;
-  case _W_WW_:
-    return is_player_turn ? 4000 : 2000;
-  case _WW_W_:
-    return is_player_turn ? 4000 : 2000;
-  default:
-    break;
-  }
-
-  // FIVE WITH SHIFT 1 BYTE
-  switch ((line >> SHIFT) & 0b1111111111)
-  {
-  case WWWWW:
-    is_win = 1; // is_player_turn ? 1 : 0;
-    return 100000;
-  case W_WWW:
-    return is_player_turn ? 10000 : 5000;
-  case WWW_W:
-    return is_player_turn ? 10000 : 5000;
-  case WW_WW:
-    return is_player_turn ? 10000 : 5000;
-  case W_W_W:
-    return is_player_turn ? 1100 : 1000;
-  default:
-    break;
-  }
-
-  // FIVE
-  switch (line & 0b1111111111)
-  {
-  case _WWW_:
-    return is_player_turn ? 4000 : 2000;
-  case BWWW_:
-    return is_player_turn ? 1100 : 1000;
-  case _WWWB:
-    return is_player_turn ? 1100 : 1000;
-  case WW_WW:
-    return is_player_turn ? 10000 : 5000;
-  case W_W_W:
-    return is_player_turn ? 1100 : 1000;
-  case _W_W_:
-    return is_player_turn ? 240 : 200;
-  default:
-    break;
-  }
-
-  // FOUR
-  switch (line & 0b11111111)
-  {
-  case _WW_:
-    return is_player_turn ? 240 : 200;
-  case BWW_:
-    return is_player_turn ? 80 : 25;
-  case _WWB:
-    return is_player_turn ? 80 : 25;
-  default:
-    break;
-  }
-
-  // THREE
-  switch (line & 0b111111)
-  {
-  case _W_:
-    return is_player_turn ? 25 : 15;
-  case BW_:
-    return 10;
-  case _WB:
-    return 10;
-  default:
-    break;
-  }
-
-  return 0;
+int evaluateblock(int blocks, int pieces)
+{
+    if (blocks == 0)
+    {
+        switch (pieces)
+        {
+        case 1:
+            return LiveOne;
+        case 2:
+            return LiveTwo;
+        case 3:
+            return LiveThree;
+        case 4:
+            return LiveFour;
+        default:
+            return Five;
+        }
+    }
+    else if (blocks == 1)
+    {
+        switch (pieces)
+        {
+        case 1:
+            return DeadOne;
+        case 2:
+            return DeadTwo;
+        case 3:
+            return DeadThree;
+        case 4:
+            return DeadFour;
+        default:
+            return Five;
+        }
+    }
+    else
+    {
+        if (pieces >= 5)
+        {
+            return Five;
+        }
+        else
+        {
+            return 0;
+        }
+    }
 }
 
 
-static long evaluate_line(long& line, size_t& is_win, bool is_player_turn) {
+int eval_field(
+    t_point *field, const size_t &side, const t_color &player, const size_t restrictions[4])
+{
+    int score = 0;
+    size_t min_y = restrictions[0];
+    size_t min_x = restrictions[1];
+    size_t max_y = restrictions[2];
+    size_t max_x = restrictions[3];
+    for (size_t y = min_y; y <= max_y; ++y)
+    {
+        for (size_t x = min_x; x <= max_x; ++x)
+        {
+            if (field[y * side + x] == player)
+            {
+                int block = 0;
+                int piece = 1;
+                // left
+                if (x == 0 || field[y * side + x - 1] != EMPTY)
+                {
+                    ++block;
+                }
+                // pieceNum
+                for (++x; x != side && field[y * side + x] == player; ++x)
+                {
+                    ++piece;
+                }
+                // right
+                if (x == side || field[y * side + x] != EMPTY)
+                {
+                    block++;
+                }
+                score = score + evaluateblock(block, piece);
+            }
+        }
+    }
+    // std::cout << ", after gorisontal  " << score;
 
-  // если конец линии ставим как будто там противник
-  if (line & PLAYER)
-    line = (line << SHIFT) | OPPONENT;
+    for (size_t x = min_x; x <= max_x; ++x)
+    {
+        for (size_t y = min_y; y <= max_y; ++y)
+        {
+            if (field[y * side + x] == player)
+            {
+                int block = 0;
+                int piece = 1;
+                // left
+                if (y == 0 || field[(y - 1) * side + x] != EMPTY)
+                {
+                    ++block;
+                }
+                // pieceNum
+                for (++y; y != side && field[y * side + x] == player; ++y)
+                {
+                    ++piece;
+                }
+                // right
+                if (y == side || field[y * side + x] != EMPTY)
+                {
+                    ++block;
+                }
+                score += evaluateblock(block, piece);
+            }
+        }
+    }
+    // std::cout << ", after vertical  " << score;
 
+   for (size_t diag_y = min_y; diag_y <= max_y +  (max_x - min_x); ++diag_y)
+    {
+        int r = static_cast<int>(diag_y);
+        size_t c = min_x;
+        while (r >= static_cast<int>(min_y) && c <= max_x)
+        {
+            if (r <= static_cast<int>(max_y))
+            {
+                if (field[r * side + c] == player)
+                {
+                    int block = 0;
+                    int piece = 1;
+                    // left
+                    if (c == 0 || r == static_cast<int>(side) - 1 || field[(r + 1) * side + c - 1] != EMPTY)
+                    {
+                        ++block;
+                    }
+                    // pieceNum
+                    for (--r, ++c; r >= 0 && field[r * side + c] == player; --r, ++c)
+                    {
+                        ++piece;
+                    }
+                    // right
+                    if (r < 0 || c == side || field[r * side + c] != EMPTY)
+                    {
+                        block++;
+                    }
+                    score += evaluateblock(block, piece);
+                }
+            }
+            --r;
+            ++c;
+        }
+    }
+    // std::cout << ", after 1 diagonal  " << score;
 
-  //расчет только если предыдущая фишка была наша, а текущая нет
-  if ((line & 0b0110) == 0b0110 || (line & 0b0100) == 0b0100) {
-    long score = evaluate(line, is_win, is_player_turn);
-    line = OPPONENT;
+    for (int diag_y = static_cast<int> (min_y)  - static_cast<int> (max_x) ; diag_y <= static_cast<int>(max_y); ++diag_y)
+    {
+        int r = diag_y;
+        size_t c = min_x;
+        while (r <= static_cast<int>(max_y) && c <= max_x)
+        {
+            if (r >= static_cast<int>(min_y) && r <= static_cast<int>(max_y))
+            {
+                if (field[r * side + c] == player)
+                {
+                    int block = 0;
+                    int piece = 1;
+                    // left
+                    if (c == 0 || r == 0 || field[(r - 1) * side + c - 1] != EMPTY)
+                    {
+                        ++block;
+                    }
+                    // pieceNum
+                    for (++r, ++c; r < static_cast<int>(side) && c < side && field[r * side + c] == player; ++r, ++c)
+                    {
+                        ++piece;
+                    }
+                    // right
+                    if (r == static_cast<int>(side) || c == side || field[r * side + c] != EMPTY)
+                    {
+                        ++block;
+                    }
+                    score += evaluateblock(block, piece);
+                }
+            }
+            ++r;
+            ++c;
+        }
+    }
+    // std::cout << ", after 2 diagonal  " << score << std::endl;
     return score;
-  }
-
-  // линия начинается с противника
-  line = OPPONENT;
-  return 0;
 }
 
+int evaluate_state(Board &state, const t_color &player, const size_t restrictions[4])
+{
+    size_t side = state.getSide();
+    t_point *field = state.getField();
+    t_color opponent = (player == WHITE) ? BLACK : WHITE;
 
-static long evaluate_segment(long& line, size_t& is_win, bool is_player, size_t point, bool is_player_turn) {
-
-  line = line << SHIFT;
-
-  if (point)
-    line = line | (is_player ? PLAYER : OPPONENT);
-
-  //расчет только если предыдущая фишка была наша, а текущая нет
-  if ((line & 0b0110) == 0b0110 || line & 0b0100)
-    return evaluate(line, is_win, is_player_turn);
-
-  return 0;
-}
-
-
-static long evaluate_diagonal(
-              t_point* field, long side, size_t& is_win,
-              t_color player, t_color opponent, bool is_player_turn) {
-
-  long player_line = OPPONENT;
-  long opponent_line = OPPONENT;
-  long score = 0;
-
-  for (long i = 0; i != side * 2 - 1; ++i) {
-    long f_y = std::min(i, side - 1);
-    long f_x = std::max(0L, i - (side - 1));
-    for (long j = 0; j != side; ++j) {
-      // bottom-left -> top-right
-      if (f_y - j <= -1 || f_x + j >= side)
-        break;
-      long pos = (f_y - j) * side + (f_x + j);
-      score += evaluate_segment(player_line, is_win, field[pos] == player, field[pos], is_player_turn);
-      score -= evaluate_segment(opponent_line, is_win, field[pos] == opponent, field[pos], !is_player_turn);
-
-    }
-    score += evaluate_line(player_line, is_win, is_player_turn);
-    score -= evaluate_line(opponent_line, is_win, !is_player_turn);
-  }
-
-  for (long i = side - 1; i > -side; --i) {
-    long f_y = std::abs(std::min(0L, i));
-    long f_x = std::max(0L, i);
-    // top-left -> bottom-right
-    for (long j = 0; j != side; ++j) {
-      if (f_y + j >= side || f_x + j >= side)
-        break;
-
-      long pos = (f_y + j) * side + (f_x + j);
-      score += evaluate_segment(player_line, is_win, field[pos] == player, field[pos], is_player_turn);
-      score -= evaluate_segment(opponent_line, is_win, field[pos] == opponent, field[pos], !is_player_turn);
-    }
-    score += evaluate_line(player_line, is_win, is_player_turn);
-    score -= evaluate_line(opponent_line, is_win, !is_player_turn);
-  }
-
-  return score;
-}
-
-
-static long evaluate_horizontal_vertical(
-              t_point* field, long side, size_t& is_win,
-              t_color player, t_color opponent, bool is_player_turn) {
-
-  long horizontal_player = OPPONENT;
-  long horizontal_opponent = OPPONENT;
-  long vertical_player = OPPONENT;
-  long vertical_opponent = OPPONENT;
-  long score  = 0;
-
-  for (long y = 0; y != side; ++y) {
-    for (long x = 0; x != side; ++x) {
-
-      long pos1 = x * side + y;
-      long pos2 = y * side + x;
-
-      score += evaluate_segment(horizontal_player, is_win, field[pos1] == player, field[pos1], is_player_turn);
-      score += evaluate_segment(vertical_player, is_win, field[pos2] == player, field[pos2], is_player_turn);
-
-      score -= evaluate_segment(horizontal_opponent, is_win, field[pos1] == opponent, field[pos1], !is_player_turn);
-      score -= evaluate_segment(vertical_opponent, is_win, field[pos2] == opponent, field[pos2], !is_player_turn);
-    }
-    score += evaluate_line(horizontal_player, is_win, is_player_turn);
-    score += evaluate_line(vertical_player, is_win, is_player_turn);
-
-    score -= evaluate_line(horizontal_opponent, is_win, !is_player_turn);
-    score -= evaluate_line(vertical_opponent, is_win, !is_player_turn);
-  }
-
-  return score;
-}
-
-
-double evaluate_state(Board& state, size_t& is_win, t_color player, bool is_player_turn) {
-
-  size_t   side = state.getSide();
-  t_point* field = state.getField();
-  t_color  opponent = (player == WHITE) ? BLACK : WHITE;
-
-  return (double)(evaluate_horizontal_vertical(field, side, is_win, player, opponent, is_player_turn)
-                + evaluate_diagonal(field, side, is_win, player, opponent, is_player_turn));
+    // std::cout << "player ";
+    int player_score = eval_field(field, side, player, restrictions);
+    // std::cout << "opponent ";
+    int opponent_score = eval_field(field, side, opponent, restrictions);
+    int score = player_score - opponent_score;
+    // std::cout << "player=" << player << ", player score=" << player_score << ", opponent_score=" << opponent_score << ", rest[0]" << restrictions[0] << ", rest[1]" << restrictions[1] << ", rest[2]" << restrictions[2] << ", rest[3]" << restrictions[3] << std::endl;
+    return score;
 }
