@@ -21,7 +21,7 @@ public:
   }               t_gomoku_mode;
 
   typedef enum    s_difficult {
-    EASY    = 2,
+    EASY    = 4,
     MEDIUM  = 6,
     HARD    = 8
   }               t_difficult;

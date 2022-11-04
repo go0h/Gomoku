@@ -58,9 +58,7 @@ int evaluateblock(int blocks, int pieces)
     }
 }
 
-
-int eval_field(
-    t_point *field, const size_t &side, const t_color &player, const size_t restrictions[4])
+int eval_field(t_point *field, const size_t &side, const t_color &player, const size_t restrictions[4])
 {
     int score = 0;
     size_t min_y = restrictions[0];
@@ -69,10 +67,14 @@ int eval_field(
     size_t max_x = restrictions[3];
     for (size_t y = min_y; y <= max_y; ++y)
     {
+        size_t cells = 0;
+        size_t player_cells = 0;
         for (size_t x = min_x; x <= max_x; ++x)
         {
             if (field[y * side + x] == player)
             {
+                ++cells;
+                ++player_cells;
                 int block = 0;
                 int piece = 1;
                 // left
@@ -80,28 +82,51 @@ int eval_field(
                 {
                     ++block;
                 }
-                // pieceNum
+                // count point
                 for (++x; x != side && field[y * side + x] == player; ++x)
                 {
                     ++piece;
+                    ++cells;
+                    ++player_cells;
                 }
                 // right
                 if (x == side || field[y * side + x] != EMPTY)
                 {
                     block++;
                 }
-                score = score + evaluateblock(block, piece);
+                score += evaluateblock(block, piece);
+                if (piece < 5 && cells > 4 && cells - player_cells == 1)
+                {
+                    block = 1;
+                    piece = 4;
+                    score += evaluateblock(block, piece);
+                }
+                --x;
+            }
+            else if (field[y * side + x] == EMPTY && cells)
+            {
+                ++cells;
+            }
+            else
+            {
+                cells = 0;
+                player_cells = 0;
             }
         }
     }
-    // std::cout << ", after gorisontal  " << score;
+    // std::cout << ", after gorisontal  " << score << std::endl;
 
     for (size_t x = min_x; x <= max_x; ++x)
     {
+        size_t cells = 0;
+        size_t player_cells = 0;
         for (size_t y = min_y; y <= max_y; ++y)
         {
+            // std::cout << ", y=" << y << ", x=" << x << ", cells=" << cells << ", player_cells=" << player_cells << std::endl;
             if (field[y * side + x] == player)
             {
+                ++cells;
+                ++player_cells;
                 int block = 0;
                 int piece = 1;
                 // left
@@ -113,6 +138,8 @@ int eval_field(
                 for (++y; y != side && field[y * side + x] == player; ++y)
                 {
                     ++piece;
+                    ++cells;
+                    ++player_cells;
                 }
                 // right
                 if (y == side || field[y * side + x] != EMPTY)
@@ -120,13 +147,31 @@ int eval_field(
                     ++block;
                 }
                 score += evaluateblock(block, piece);
+                if (piece < 5 && cells > 4 && cells - player_cells == 1)
+                {
+                    block = 1;
+                    piece = 4;
+                    score += evaluateblock(block, piece);
+                }
+                --y;
+            }
+            else if (field[y * side + x] == EMPTY && cells)
+            {
+                ++cells;
+            }
+            else
+            {
+                cells = 0;
+                player_cells = 0;
             }
         }
     }
-    // std::cout << ", after vertical  " << score;
+    // std::cout << ", after vertical  " << score << std::endl;
 
-   for (size_t diag_y = min_y; diag_y <= max_y +  (max_x - min_x); ++diag_y)
+    for (size_t diag_y = min_y; diag_y <= max_y + (max_x - min_x); ++diag_y)
     {
+        size_t cells = 0;
+        size_t player_cells = 0;
         int r = static_cast<int>(diag_y);
         size_t c = min_x;
         while (r >= static_cast<int>(min_y) && c <= max_x)
@@ -135,6 +180,8 @@ int eval_field(
             {
                 if (field[r * side + c] == player)
                 {
+                    ++cells;
+                    ++player_cells;
                     int block = 0;
                     int piece = 1;
                     // left
@@ -146,6 +193,8 @@ int eval_field(
                     for (--r, ++c; r >= 0 && field[r * side + c] == player; --r, ++c)
                     {
                         ++piece;
+                        ++cells;
+                        ++player_cells;
                     }
                     // right
                     if (r < 0 || c == side || field[r * side + c] != EMPTY)
@@ -153,16 +202,35 @@ int eval_field(
                         block++;
                     }
                     score += evaluateblock(block, piece);
+                    if (piece < 5 && cells > 4 && cells - player_cells == 1)
+                    {
+                        block = 1;
+                        piece = 4;
+                        score += evaluateblock(block, piece);
+                    }
+                    ++r;
+                    --c;
+                }
+                else if (field[r * side + c] == EMPTY && cells)
+                {
+                    ++cells;
+                }
+                else
+                {
+                    cells = 0;
+                    player_cells = 0;
                 }
             }
             --r;
             ++c;
         }
     }
-    // std::cout << ", after 1 diagonal  " << score;
+    // std::cout << ", after 1 diagonal  " << score << std::endl;
 
-    for (int diag_y = static_cast<int> (min_y)  - static_cast<int> (max_x) ; diag_y <= static_cast<int>(max_y); ++diag_y)
+    for (int diag_y = static_cast<int>(min_y) - static_cast<int>(max_x); diag_y <= static_cast<int>(max_y); ++diag_y)
     {
+        size_t cells = 0;
+        size_t player_cells = 0;
         int r = diag_y;
         size_t c = min_x;
         while (r <= static_cast<int>(max_y) && c <= max_x)
@@ -171,6 +239,8 @@ int eval_field(
             {
                 if (field[r * side + c] == player)
                 {
+                    ++cells;
+                    ++player_cells;
                     int block = 0;
                     int piece = 1;
                     // left
@@ -182,6 +252,8 @@ int eval_field(
                     for (++r, ++c; r < static_cast<int>(side) && c < side && field[r * side + c] == player; ++r, ++c)
                     {
                         ++piece;
+                        ++cells;
+                        ++player_cells;                        
                     }
                     // right
                     if (r == static_cast<int>(side) || c == side || field[r * side + c] != EMPTY)
@@ -189,7 +261,24 @@ int eval_field(
                         ++block;
                     }
                     score += evaluateblock(block, piece);
+                    if (piece < 5 && cells > 4 && cells - player_cells == 1)
+                    {
+                        block = 1;
+                        piece = 4;
+                        score += evaluateblock(block, piece);
+                    }
+                    --r;
+                    --c;                    
                 }
+                else if (field[r * side + c] == EMPTY && cells)
+                {
+                    ++cells;
+                }
+                else
+                {
+                    cells = 0;
+                    player_cells = 0;
+                }                
             }
             ++r;
             ++c;
