@@ -1,20 +1,14 @@
-//#include <array>
-#include <iostream>
 #include "Gomoku.hpp"
-#define DIRECTION_SIZE 9
-#define DIRECTION_STOP 3
-#define WIN_DETECTED -1
-
 
 void setRestrictions(const t_point *field, const size_t &side, size_t restrictions[4])
 {
-    int min_y = static_cast<int>(side) + 1;
-    int min_x = static_cast<int>(side) + 1;
-    int max_y = -1;
-    int max_x = -1;
-    for (int y = 0; y < static_cast<int>(side); ++y)
+    size_t min_y = side;
+    size_t min_x = side;
+    size_t max_y = 0;
+    size_t max_x = 0;
+    for (size_t y = 0; y < side; ++y)
     {
-        for (int x = 0; x < static_cast<int>(side); ++x)
+        for (size_t x = 0; x < side; ++x)
         {
             if (field[y * side + x] != 0)
             {
@@ -25,10 +19,10 @@ void setRestrictions(const t_point *field, const size_t &side, size_t restrictio
             }
         }
     }
-    restrictions[0] = static_cast<size_t>(min_y);
-    restrictions[1] = static_cast<size_t>(min_x);
-    restrictions[2] = static_cast<size_t>(max_y);
-    restrictions[3] = static_cast<size_t>(max_x);
+        restrictions[0] = min_y;
+        restrictions[1] = min_x;
+        restrictions[2] = max_y;
+        restrictions[3] = max_x;
     return;
 }
 
@@ -126,11 +120,9 @@ int eval_sequence(int seq)
     return 0;
 }
 
-int evaluate_direction(const t_point direction[9], const t_color player)
+int evaluate_direction(const t_point direction[9], const t_color & player, const t_color & opponent)
 {
     int score = 0;
-
-    t_color opponent = (player == WHITE) ? BLACK : WHITE;
 
     for (int i = 0; (i + 4) < DIRECTION_SIZE; ++i)
     {
@@ -166,11 +158,10 @@ int evaluate_direction(const t_point direction[9], const t_color player)
     return score;
 }
 
-int evaluate_captures(t_point *field, const size_t &side, const t_color &player, size_t &y, size_t &x, int capture)
+int evaluate_captures(t_point *field, const size_t &side, const t_color &player, const t_color &opponent, size_t &y, size_t &x, int capture)
 {
     int score = 0;
     int player_count = 0;
-    t_color opponent = player == WHITE ? BLACK : WHITE;
 
     for (size_t i = 0; i != 8; ++i)
     {
@@ -208,28 +199,7 @@ int evaluate_captures(t_point *field, const size_t &side, const t_color &player,
     return score;
 }
 
-std::string coord_to_pos_debug_move(size_t x, size_t y, size_t side)
-{
-  return std::string(1, char(97 + x)) + std::to_string(side - y);
-}
-
-void    printField(t_point *field, const size_t &_side)
-{
-  for (size_t y = 0; y != _side; ++y) {
-    for (size_t x = 0; x != _side; ++x) {
-      char p = '.';
-      if (field[y * _side + x] == WHITE)
-        p = 'W';
-      else if (field[y * _side + x] == BLACK)
-        p = 'B';
-      printf("%-2c", p);
-    }
-    printf("\n");
-  }
-}
-
-
-double evalute_move(t_point *field, const size_t &side, const t_color &player, size_t &y, size_t &x, const int capture[3])
+double evalute_move(t_point *field, const size_t &side, const t_color &player, const t_color &opponent , size_t &y, size_t &x, const int capture[3], bool & is_catch)
 {
     int score = 0;
     int scoreTmp = 0;
@@ -238,23 +208,20 @@ double evalute_move(t_point *field, const size_t &side, const t_color &player, s
 
     for (int i = 0; i < 4; ++i)
     {
-        scoreTmp = evaluate_direction(directions[i], player);
+        scoreTmp = evaluate_direction(directions[i], player, opponent);
         if (scoreTmp == WIN_DETECTED)
         {
-            // std::cout << "evalute_move + WIN_DETECTED, player=" << player << ", coord= " << coord_to_pos_debug_move( x,  y, side) << std::endl;
-            // printField(field, side);
             return WIN_DETECTED;
         }
         score += scoreTmp;
     }
 
-    scoreTmp = evaluate_captures(field, side, player, y, x, capture[player]);
+    scoreTmp = evaluate_captures(field, side, player, opponent, y, x, capture[player]);
     if (scoreTmp == WIN_DETECTED)
     {
-            // std::cout << "evalute_move + WIN_DETECTED CAPTURE, player=" << player << ", coord= " << coord_to_pos_debug_move( x,  y, side) << std::endl;
-            // printField(field, side);
-
         return WIN_DETECTED;
+    } else if (scoreTmp){
+        is_catch = true;
     }
     score += scoreTmp;
     return score;

@@ -1,4 +1,5 @@
 
+#include "Gomoku.hpp"
 #include "Minimax.hpp"
 #include "minimax_functions.hpp"
 #include <functional>
@@ -13,11 +14,11 @@ Minimax::Minimax(size_t num_threads) :
 
   for (size_t i = 0; i < _num_threads; ++i) {
 
-    t_depth_state* ds = new t_depth_state[10];
+    t_depth_state* ds = new t_depth_state[MAX_DEPTH];
 
-    for (size_t j = 0; j < 10; ++j) {
+    for (size_t j = 0; j < MAX_DEPTH; ++j) {
       ds[j].num_moves = 0;
-      ds[j].poss_moves = new t_move_eval[361];
+      ds[j].poss_moves = new t_move_eval[MAX_SIDE * MAX_SIDE];
 
       ds[j].num_captures = 0;
       ds[j].captures = new size_t[16];
@@ -34,7 +35,7 @@ Minimax::~Minimax()
 
     t_depth_state* ds = _game_state[i].depth_state;
 
-    for (size_t j = 0; j < 10; ++i) {
+    for (size_t j = 0; j < MAX_DEPTH; ++i) {
       delete[] ds[j].poss_moves;
       delete[] ds[j].captures;
     }
@@ -63,10 +64,11 @@ void Minimax::_init_game_states(Board board, size_t depth, t_color player, size_
     }
   }
 
-//std::cout << "_init_game_state, player="<< player << ", depth="<< depth << std::endl;
+  size_t restrictions[4];
+  setRestrictions(board.getField(), board.getSide(), restrictions);
 
   // находим возможные позиции для первого хода
-  t_move_eval* pm = get_possible_moves(&_game_state[0], depth, player);
+  t_move_eval* pm = get_possible_moves(&_game_state[0], depth, player, opponent, restrictions);
   size_t all_moves = _game_state[0].depth_state[depth].num_moves;
   _game_state[0].depth_state[depth].num_moves = 0;
 
@@ -116,9 +118,11 @@ std::vector<t_move_eval> Minimax::_get_sorted_moves(size_t depth) {
 std::vector<t_move_eval> Minimax::run(Board board, size_t depth, t_color player, size_t p_captures, size_t o_captures) {
 
   _init_game_states(board, depth, player, p_captures, o_captures);
+  size_t restrictions[4];
+  setRestrictions(board.getField(), board.getSide(), restrictions);
 
   for (size_t i = 0; i < _num_threads; ++i) {
-    auto f = std::bind(minimax_thread_f, &_game_state[i], (int)player, depth);
+    auto f = std::bind(minimax_thread_f, &_game_state[i], (int)player, depth, restrictions);
     _pool.add_task(f);
   }
   _pool.wait_all();

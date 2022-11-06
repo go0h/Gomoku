@@ -6,13 +6,11 @@
 #define XO_X 0b10010010
 #define X_OX 0b10000110
 
-#define EXPANSION_STEP 2
-#define WIN_DETECTED -1
-
 #include <iostream>
 #include <random>
 #include "utils.hpp"
 #include "minimax_functions.hpp"
+#include "Gomoku.hpp"
 
 using Dist = std::uniform_int_distribution<size_t>;
 
@@ -46,8 +44,8 @@ static size_t is_free_tree(size_t line)
   return 0;
 }
 
-static size_t get_free_three_by_dir(t_point *field, long side,
-                                    long x, long y, long x_dir, long y_dir, t_color opponent)
+static size_t get_free_three_by_dir(const t_point *field, const long & side,
+                                    const long & x, const long & y, const long & x_dir, const long & y_dir, const t_color & opponent)
 {
 
   size_t three_num = 0;
@@ -82,11 +80,10 @@ static size_t get_free_three_by_dir(t_point *field, long side,
   return three_num;
 }
 
-size_t get_num_of_free_threes(t_point *field, size_t side, size_t x, size_t y, t_color player)
+size_t get_num_of_free_threes(t_point *field, const size_t & side, const size_t & x, const size_t & y, const t_color & player, const t_color & opponent)
 {
 
   size_t three_num = 0;
-  t_color opponent = player == WHITE ? BLACK : WHITE;
   size_t pos = y * side + x;
 
   if (field[pos] != EMPTY)
@@ -115,7 +112,7 @@ size_t get_num_of_free_threes(t_point *field, size_t side, size_t x, size_t y, t
   return three_num;
 }
 
-static size_t is_capture(t_point *field, size_t side, long x, long y, long x_dir, long y_dir, t_color player)
+static size_t is_capture(const t_point *field, const size_t & side, const  long &x, const long & y, const long & x_dir, const long & y_dir, const t_color & player)
 {
 
   size_t line = 0;
@@ -141,7 +138,7 @@ static size_t is_capture(t_point *field, size_t side, long x, long y, long x_dir
   return line == X_OX || line == XO_X;
 }
 
-bool is_possible_capture(t_point *field, size_t side, size_t x, size_t y, t_color player)
+bool is_possible_capture(const t_point *field, const size_t &side, const size_t &x, const size_t &y, const t_color &player)
 {
 
   // horizontal
@@ -163,13 +160,13 @@ bool is_possible_capture(t_point *field, size_t side, size_t x, size_t y, t_colo
   return false;
 }
 
-static bool not_forbidden(t_point *field, size_t side, size_t x, size_t y, t_color player)
+static bool not_forbidden(t_point *field, const size_t & side, const size_t & x, const size_t & y, const t_color & player, const t_color & opponent)
 {
-  return get_num_of_free_threes(field, side, x, y, player) < 2 &&
+  return get_num_of_free_threes(field, side, x, y, player, opponent) < 2 &&
          !is_possible_capture(field, side, x, y, player);
 }
 
-t_move_eval get_random_move(t_point *field, size_t side, t_color player)
+t_move_eval get_random_move(t_point *field, const size_t & side , const t_color & player, const t_color & opponent)
 {
 
   static std::default_random_engine re{};
@@ -180,36 +177,25 @@ t_move_eval get_random_move(t_point *field, size_t side, t_color player)
     size_t x = uid(re, Dist::param_type{0, side - 1});
     size_t y = uid(re, Dist::param_type{0, side - 1});
 
-    if (field[y * side + x] == EMPTY && not_forbidden(field, side, x, y, player))
-      return {0.0, x, y};
+    if (field[y * side + x] == EMPTY && not_forbidden(field, side, x, y, player, opponent))
+      return {0, x, y, false};
   }
-  return {0.0, 0, 0};
+  return {0, 0, 0, false};
 }
 
-std::string coord_to_pos_debug(size_t x, size_t y, size_t side)
-{
-  return std::string(1, char(97 + x)) + std::to_string(side - y);
-}
-
-t_move_eval *get_possible_moves(t_game_state *gs, size_t depth, t_color player)
+t_move_eval *get_possible_moves(t_game_state *gs, const size_t & depth, const t_color & player, const t_color & opponent, const size_t restrictions[4])
 {
 
   size_t side = gs->board.getSide();
   t_point *field = gs->board.getField();
-  // int capture =  gs->captures[player];
   t_move_eval *pm = gs->depth_state[depth].poss_moves;
   size_t &num_moves = gs->depth_state[depth].num_moves;
-  // size_t        win_flag = 0;
   num_moves = 0;
 
-  size_t restrictions[4];
-  setRestrictions(field, side, restrictions);
-
-  // std::cout << "gsetRestrictions 0="<< restrictions[0] <<" " << restrictions[1] << " "<< restrictions[2]<< " " << restrictions[3] << std::endl;
-  // std::cout << "get_possible_moves, player="<< player << ", depth="<< depth << re>>strictions[0] << std::endl;
-  if (restrictions[0] > side)
+  // in start game first move
+  if (restrictions[0] == side)
   {
-    pm[num_moves] = get_random_move(field, side, player);
+    pm[num_moves] = get_random_move(field, side, player, opponent);
     ++num_moves;
     return pm;
   }
@@ -228,35 +214,29 @@ t_move_eval *get_possible_moves(t_game_state *gs, size_t depth, t_color player)
       if (field[pos] != EMPTY)
         continue;
 
-      if (not_forbidden(field, side, x, y, player))
+      if (not_forbidden(field, side, x, y, player, opponent))
       {
-        int score = evalute_move(field, side, player, y, x, gs->captures);
+        bool is_catch = false;
+        int score = evalute_move(field, side, player, opponent, y, x, gs->captures, is_catch);
         if (score == WIN_DETECTED)
         {
-          //  std::cout << "WIN_DETECTED score=" << score << ", player=" << player << ", COOR=" << coord_to_pos_debug(x, y, side) << std::endl;
           num_moves = 0;
-          pm[num_moves] = {static_cast<double>(score), x, y};
+          pm[num_moves] = {score, x, y, is_catch};
           ++num_moves;
           return pm;
 
         }
-        pm[num_moves] = {static_cast<double>(score), x, y};
+        pm[num_moves] = {score, x, y, is_catch};
         ++num_moves;
       }
     }
   }
   if (!num_moves)
   {
-    pm[num_moves] = get_random_move(field, side, player);
+    pm[num_moves] = get_random_move(field, side, player, opponent);
     num_moves++;
   }
   qsort(pm, num_moves, sizeof(t_move_eval), &compare_moves_desc);
-  // if (depth == 6)
-  // {
-  //   std::cout << "pm[0] score=" << pm[0].score << ", x=" << pm[0].x << ", y=" << pm[0].y << ", COOR=" << coord_to_pos_debug(pm[0].x, pm[0].y, side);
-  //   std::cout << ",  pm[1] score=" << pm[1].score << ", x=" << pm[1].x << ", y=" << pm[1].y << ", COOR=" << coord_to_pos_debug(pm[1].x, pm[1].y, side) << std::endl;
-  // }
-  num_moves = num_moves > 10 ? 10 : num_moves;
-   //num_moves = num_moves   -  num_moves / 3;
+  num_moves = num_moves > MAX_MOVES ? MAX_MOVES : num_moves;
   return pm;
 }

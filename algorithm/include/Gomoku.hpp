@@ -6,7 +6,19 @@
 #include "gomoku_methods.hpp"
 #include "Minimax.hpp"
 
-#define NUM_THREADS 4
+# define NUM_THREADS 4
+
+# define PLUS_INF  1000000
+# define MINUS_INF -1000000
+
+# define DIRECTION_SIZE 9
+# define DIRECTION_STOP 3
+# define WIN_DETECTED -1
+# define MAX_MOVES 7
+# define EXPANSION_STEP 2
+# define MAX_DEPTH 9
+# define MAX_SIDE 19
+
 
 class Gomoku
 {

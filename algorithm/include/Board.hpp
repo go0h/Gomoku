@@ -63,6 +63,7 @@ private:
   t_point*      _field = nullptr;
   unsigned      _score = 0;
   size_t        _side;
+  // size_t        _restrictions[4];
 };
 
 /*

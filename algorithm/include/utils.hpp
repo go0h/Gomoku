@@ -19,12 +19,15 @@
 # define CYAN    "\033[1;96m"
 # define RESET   "\033[0m"
 
+// # define PLUS_INF  1000000
+// # define MINUS_INF -1000000
 
 typedef struct  s_move_eval
 {
-  double    score;
+  int       score;
   size_t    x;
   size_t    y;
+  bool      is_catch;
 }               t_move_eval;
 
 

@@ -74,8 +74,9 @@ GomokuMethod Gomoku::_start_game(MethodArgs::pointer args) {
   #endif
 
   // первый ход ничего не делаем, если начинаем вторыми или игра PvP
-  if (_player == WHITE || _mode == PvP)
+  if (_player == WHITE || _mode == PvP) {
     return { "start_game", args };
+  }
 
   t_color opponent = _player == WHITE ? BLACK : WHITE;
 
