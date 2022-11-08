@@ -223,7 +223,7 @@ class BoardGui:
                 # за последний ход >= 10 захватов
                 opponent = self._p2 if self._cur_player == self._p1 else self._p1
                 if (len(strike) != 0 \
-                        and (opponent.captures() + self._board.get_num_of_captures_by_pos(strike, opponent.get_color()) < 10)) \
+                        and (opponent.captures() + self._board.get_max_of_captures_by_pos(strike, self._cur_player.get_color()) < 10)) \
                     or self._cur_player.captures() >= 10:
                     self.print_winner(strike)
                 else:
@@ -245,7 +245,7 @@ class BoardGui:
                 opponent = self._p2 if self._cur_player == self._p1 else self._p1
                 strike = self._board.get_win_strike(position)
                 if (len(strike) != 0 \
-                        and (opponent.captures() + self._board.get_num_of_captures_by_pos(strike, opponent.get_color()) < 10)) \
+                        and (opponent.captures() + self._board.get_max_of_captures_by_pos(strike, self._cur_player.get_color()) < 10)) \
                     or self._cur_player.captures() >= 10:
                     self.print_winner(strike)
                 else:

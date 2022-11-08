@@ -330,15 +330,15 @@ class Board:
                 return False
         return True
 
-    def get_num_of_captures_by_pos(self, pos_strike: List[str], color: str) -> bool:
+    def get_max_of_captures_by_pos(self, pos_strike: List[str], color: str) -> bool:
         strike = [(self.position_to_coordinates(pos)) for pos in pos_strike]
         c = Color.WHITE if color.upper() == Color.WHITE.name else Color.BLACK
-        return self.get_num_of_captures(strike, c)
+        return self.get_max_of_captures(strike, c)
 
-    def get_num_of_captures(self, strike: List[Tuple[int, int]], color: Color) -> bool:
+    def get_max_of_captures(self, strike: List[Tuple[int, int]], color: Color) -> bool:
         versa_color = Color.BLACK if color == Color.WHITE else Color.WHITE
         area = self.create_area_of_win_strike(strike)
-        num_captures = 0
+        max_captures = 0
         for x, y in area:
             if not self.is_forbidden_turn(x, y, versa_color):
                 self.board[y][x] = versa_color
@@ -347,9 +347,9 @@ class Board:
                     for x_, y_ in captures:
                         self.board[y_][x_] = color
                     self.board[y][x] = Color.EMPTY
-                    num_captures += len(captures)
+                    max_captures = max(len(captures), max_captures)
                 self.board[y][x] = Color.EMPTY
-        return num_captures
+        return max_captures
 
     def create_area_of_win_strike(self, strike):
         area = []
