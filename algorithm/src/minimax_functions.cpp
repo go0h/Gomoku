@@ -121,13 +121,10 @@ int negamax_thread(t_game_state *gs, const size_t &depth, const t_color &player,
       alpha = score;
     }
 
-    if (alpha >= beta)
+    if (alpha > beta)
     {
-      // bestScore = score;
       break;
     }
-    // if (score >= beta)
-    //   return beta;
   }
   return bestScore;
 }

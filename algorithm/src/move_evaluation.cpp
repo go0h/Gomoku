@@ -206,6 +206,16 @@ double evalute_move(t_point *field, const size_t &side, const t_color &player, c
     t_point directions[4][9];
     setDirections(field, side, y, x, directions);
 
+    scoreTmp = evaluate_captures(field, side, player, opponent, y, x, capture[player]);
+    if (scoreTmp){
+        is_catch = true;
+        if (scoreTmp == WIN_DETECTED)
+        {
+            return WIN_DETECTED;
+        } 
+        score += scoreTmp;
+    }
+    
     for (int i = 0; i < 4; ++i)
     {
         scoreTmp = evaluate_direction(directions[i], player, opponent);
@@ -216,13 +226,5 @@ double evalute_move(t_point *field, const size_t &side, const t_color &player, c
         score += scoreTmp;
     }
 
-    scoreTmp = evaluate_captures(field, side, player, opponent, y, x, capture[player]);
-    if (scoreTmp == WIN_DETECTED)
-    {
-        return WIN_DETECTED;
-    } else if (scoreTmp){
-        is_catch = true;
-    }
-    score += scoreTmp;
     return score;
 }
