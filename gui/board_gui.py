@@ -36,7 +36,7 @@ class BoardGui:
         self._time_spend = time.perf_counter()
         self._winner = None
         self._winner_name = None
-        self._win_strike = []
+        self._win_strike_piecies = []
 
         # player properties
         self._p1 = None
@@ -46,6 +46,9 @@ class BoardGui:
         # p2: [piece1, piece2]
         self._captured = dict()
         self._hints = []
+
+        # for last move
+        self._win_strike = None
 
         self._send_func = send_func
 
@@ -218,17 +221,11 @@ class BoardGui:
                     self.hide_captured(position, capture)
                     self._cur_player.add_captures(len(capture))
 
-                strike = self._board.get_win_strike(position)
-                # если есть выйгрышная серия и если противник не сможет захватить ее и набрать
-                # за последний ход >= 10 захватов
-                opponent = self._p2 if self._cur_player == self._p1 else self._p1
-                if (len(strike) != 0 \
-                        and (opponent.captures() + self._board.get_num_of_captures_by_pos(strike, opponent.get_color()) < 10)) \
-                    or self._cur_player.captures() >= 10:
-                    self.print_winner(strike)
-                else:
-                    self._send_method("make_turn", position, capture)
-                    self._next()
+                if self.is_win_move(position):
+                    return
+
+                self._send_method("make_turn", position, capture)
+                self._next()
 
     def make_turn(self, position, **kwargs):
         if not self.piece_on_table(position):
@@ -242,14 +239,58 @@ class BoardGui:
                 if "hints" in kwargs.keys():
                     self.print_hints(**kwargs)
 
-                opponent = self._p2 if self._cur_player == self._p1 else self._p1
-                strike = self._board.get_win_strike(position)
-                if (len(strike) != 0 \
-                        and (opponent.captures() + self._board.get_num_of_captures_by_pos(strike, opponent.get_color()) < 10)) \
-                    or self._cur_player.captures() >= 10:
-                    self.print_winner(strike)
-                else:
-                    self._next()
+                if self.is_win_move(position):
+                    return
+
+                self._next()
+
+    def is_win_move(self, position):
+
+        # Победа по захватам
+        if (self._cur_player.captures() >= 10):
+            print(f"{self._cur_player.get_name()} win by captures")
+            self.print_winner([])
+            return True
+
+        opponent = self._p2 if self._cur_player == self._p1 else self._p1
+
+        # у противника есть 5 в ряд, и он не нарушен за текущий ход
+        if self._win_strike is not None and self._cur_player.get_color() != self._board.get_pos_color(self._win_strike[0]) \
+            and self._win_strike == self._board.get_win_strike(self._win_strike[0]):
+            self._switch_player()
+            print(f"{self._cur_player.get_name()} win by strike in previous move")
+            self.print_winner(self._win_strike)
+            self._switch_player()
+            return True
+
+        strike = self._board.get_win_strike(position)
+
+        # есть выйгрышная серия
+        if (len(strike) != 0):
+
+            opponent = self._p2 if self._cur_player == self._p1 else self._p1
+
+            # список всех фишек текущего игрока
+            piecies = self._board.get_piecies_by_color(self._cur_player.get_color())
+
+            print(f"Oponent captues = {opponent.captures()}")
+            print(f"Max possible to catch = {str(self._board.get_max_of_captures_by_pos(piecies, self._cur_player.get_color()))}")
+            print(f"Max possible to catch in strike = {str(self._board.get_max_of_captures_by_pos(strike, self._cur_player.get_color()))}")
+
+            # Победа по 5 в ряд
+            # Ппротивник не может перебить его или набрать за ход +10 захватов
+            if (self._board.get_max_of_captures_by_pos(strike, self._cur_player.get_color()) == 0 \
+                and (opponent.captures() + self._board.get_max_of_captures_by_pos(piecies, self._cur_player.get_color())) < 10):
+                print(f"{self._cur_player.get_name()} win by strike")
+                self.print_winner(strike)
+                return True
+
+            # запоминаем выйгрышную серию, чтобы в следующий ход проверить
+            self._win_strike = strike
+        else:
+            self._win_strike = None
+
+        return False
 
     def _switch_player(self):
         if self._cur_player == self._p1:
@@ -305,7 +346,7 @@ class BoardGui:
             p = BoardGui.create_circle(self._board_canvas, x, y, self._piece_radius,
                                        fill=self._cur_player.get_color(),
                                        outline=outline, width=2)
-            self._win_strike.append(Piece(p, position, self._cur_player.get_color()))
+            self._win_strike_piecies.append(Piece(p, position, self._cur_player.get_color()))
 
     def _delete_win_strike(self):
         self._board_canvas.bind('<Button-1>', self.make_turn_on_event)
@@ -313,9 +354,9 @@ class BoardGui:
         self._winner = None
         self._winner_name.destroy()
         self._winner_name = None
-        for piece in self._win_strike:
+        for piece in self._win_strike_piecies:
             self._board_canvas.delete(piece.get_piece())
-        self._win_strike = []
+        self._win_strike_piecies = []
 
     def set_pieces(self, positions, color, **kwargs):
         for pos in positions:

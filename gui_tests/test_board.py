@@ -545,3 +545,17 @@ class TestBoard:
                 board.set_piece(x, y, Color.WHITE)
                 board.check_win(x, y)
                 board.set_piece(x, y, Color.EMPTY)
+
+    def test_get_area(self):
+        piecies = {"f8": WHITE, "g8": BLACK, "h8": BLACK}
+
+        board = get_board_with_pieces(piecies)
+
+        a = [(board.position_to_coordinates(p)) for p in ["g8", "h8"]]
+        res = [board.coordinates_to_position(x, y) for (x, y) in board.create_area_of_win_strike(a)]
+
+        assert sorted(res) == sorted(["e10", "f10", "g10", "h10", "i10", "j10",
+                                       "f9", "g9", "h9", "i9",
+                                       "i8", "j8",
+                                       "f7", "g7", "h7", "i7",
+                                       "e6", "f6", "g6", "h6", "i6", "j6"])

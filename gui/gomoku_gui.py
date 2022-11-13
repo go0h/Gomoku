@@ -103,7 +103,7 @@ class GomokuGui:
         diff.place(relx=.35, rely=.59, anchor="center")
 
         hard = ttk.StringVar()
-        hard.set("EASY")
+        hard.set("MEDIUM")
         r1 = ttk.OptionMenu(frame, hard, "EASY", "MEDIUM", "HARD")
         r1.configure(font=BUTTON_FONT,
                      width=OPTION_MENU_WIDTH, height=OPTION_MENU_HEIGHT,
