@@ -86,7 +86,7 @@ int negamax_thread(t_game_state *gs, const size_t &depth, const t_color &player,
 
   if (!depth)
   {
-    return evaluate_state(gs->board, opponent, restrictions);
+    return -evaluate_state(gs->board, opponent, restrictions);
   }
 
   t_move_eval *possible_moves = get_possible_moves(gs, depth, player, opponent, restrictions);
