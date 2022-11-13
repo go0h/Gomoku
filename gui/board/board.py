@@ -66,6 +66,19 @@ class Board:
             raise TypeError
         self.delete_piece(x, y)
 
+    def get_piecies_by_color(self, color: str) -> List[str]:
+        piecies = []
+        c = Color.WHITE if color.upper() == Color.WHITE.name else Color.BLACK
+        for y in range(self.board_size):
+            for x in range(self.board_size):
+                if self.board[y][x] == c:
+                    piecies.append(self.coordinates_to_position(x, y))
+        return piecies
+
+    def get_pos_color(self, pos: str) -> List[str]:
+        x, y = self.position_to_coordinates(pos)
+        return self.board[y][x].name
+
     def coordinates_to_position(self, x: int, y: int) -> str:
         if x > self.board_size or y > self.board_size:
             raise ValueError(f'Coordinate ({x}, {y}) absence on board')
@@ -330,12 +343,12 @@ class Board:
                 return False
         return True
 
-    def get_max_of_captures_by_pos(self, pos_strike: List[str], color: str) -> bool:
+    def get_max_of_captures_by_pos(self, pos_strike: List[str], color: str) -> int:
         strike = [(self.position_to_coordinates(pos)) for pos in pos_strike]
         c = Color.WHITE if color.upper() == Color.WHITE.name else Color.BLACK
         return self.get_max_of_captures(strike, c)
 
-    def get_max_of_captures(self, strike: List[Tuple[int, int]], color: Color) -> bool:
+    def get_max_of_captures(self, strike: List[Tuple[int, int]], color: Color) -> int:
         versa_color = Color.BLACK if color == Color.WHITE else Color.WHITE
         area = self.create_area_of_win_strike(strike)
         max_captures = 0
@@ -352,27 +365,19 @@ class Board:
         return max_captures
 
     def create_area_of_win_strike(self, strike):
-        area = []
-        y_dir = strike[1][0] - strike[0][0]
-        x_dir = strike[1][1] - strike[0][1]
-        x_f, y_f = strike[0]
-        x_l, y_l = strike[4]
-        new_strike = [(x_f - 2 * y_dir, y_f - 2 * x_dir), (x_f - 1 * y_dir, y_f - 1 * x_dir)] \
-            + strike + [(x_l + 2 * y_dir, y_l + 2 * x_dir), (x_l + 1 * y_dir, y_l + 1 * x_dir)]
-        for i in range(len(new_strike)):
-            for shift in [-2, -1, 1, 2]:
-                res = self._x_y(new_strike[i][0], new_strike[i][1], x_dir, y_dir, shift)
-                if res is not None:
-                    area.append(res)
-        return area
-
-    def _x_y(self, x, y, x_dir, y_dir, shift):
-        x_ = x + shift * x_dir
-        y_ = y + shift * y_dir
-        if 0 <= x_ < self.board_size and 0 <= y_ < self.board_size \
-                and self.board[y_][x_] == Color.EMPTY:
-            return x_, y_
-        return None
+        area = set()  # unique only
+        for x, y in strike:
+            dirs = [(-1, -1), (0, -1), (1, -1), (-1,  0), (1,  0), (-1,  1), (0,  1), (1,  1)]
+            for x_dir, y_dir in dirs:
+                x1 = x + x_dir * 1
+                y1 = y + y_dir * 1
+                if 0 <= x1 < self.board_size and 0 <= y1 < self.board_size and self.board[y1][x1] == Color.EMPTY:
+                    area.add((x1, y1))
+                x2 = x + x_dir * 2
+                y2 = y + y_dir * 2
+                if 0 <= x2 < self.board_size and 0 <= y2 < self.board_size and self.board[y2][x2] == Color.EMPTY:
+                    area.add((x2, y2))
+        return list(area)
 
     def __str__(self):
         res = ""
