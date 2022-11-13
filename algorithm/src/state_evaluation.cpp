@@ -8,7 +8,6 @@
 #define DeadFour 5000;
 #define Five 100000;
 
-#include <iostream>
 #include "Gomoku.hpp"
 
 int evaluateblock(int blocks, int pieces)
@@ -114,7 +113,6 @@ int eval_field(t_point *field, const size_t &side, const t_color &player, const 
             }
         }
     }
-    // std::cout << ", after gorisontal  " << score << std::endl;
 
     for (size_t x = min_x; x <= max_x; ++x)
     {
@@ -122,7 +120,6 @@ int eval_field(t_point *field, const size_t &side, const t_color &player, const 
         size_t player_cells = 0;
         for (size_t y = min_y; y <= max_y; ++y)
         {
-            // std::cout << ", y=" << y << ", x=" << x << ", cells=" << cells << ", player_cells=" << player_cells << std::endl;
             if (field[y * side + x] == player)
             {
                 ++cells;
@@ -166,7 +163,6 @@ int eval_field(t_point *field, const size_t &side, const t_color &player, const 
             }
         }
     }
-    // std::cout << ", after vertical  " << score << std::endl;
 
     for (size_t diag_y = min_y; diag_y <= max_y + (max_x - min_x); ++diag_y)
     {
@@ -184,19 +180,16 @@ int eval_field(t_point *field, const size_t &side, const t_color &player, const 
                     ++player_cells;
                     int block = 0;
                     int piece = 1;
-                    // left
                     if (c == 0 || r == static_cast<int>(side) - 1 || field[(r + 1) * side + c - 1] != EMPTY)
                     {
                         ++block;
                     }
-                    // pieceNum
                     for (--r, ++c; r >= 0 && field[r * side + c] == player; --r, ++c)
                     {
                         ++piece;
                         ++cells;
                         ++player_cells;
                     }
-                    // right
                     if (r < 0 || c == side || field[r * side + c] != EMPTY)
                     {
                         block++;
@@ -225,7 +218,6 @@ int eval_field(t_point *field, const size_t &side, const t_color &player, const 
             ++c;
         }
     }
-    // std::cout << ", after 1 diagonal  " << score << std::endl;
 
     for (int diag_y = static_cast<int>(min_y) - static_cast<int>(max_x); diag_y <= static_cast<int>(max_y); ++diag_y)
     {
@@ -243,19 +235,16 @@ int eval_field(t_point *field, const size_t &side, const t_color &player, const 
                     ++player_cells;
                     int block = 0;
                     int piece = 1;
-                    // left
                     if (c == 0 || r == 0 || field[(r - 1) * side + c - 1] != EMPTY)
                     {
                         ++block;
                     }
-                    // pieceNum
                     for (++r, ++c; r < static_cast<int>(side) && c < side && field[r * side + c] == player; ++r, ++c)
                     {
                         ++piece;
                         ++cells;
                         ++player_cells;                        
                     }
-                    // right
                     if (r == static_cast<int>(side) || c == side || field[r * side + c] != EMPTY)
                     {
                         ++block;
@@ -284,7 +273,6 @@ int eval_field(t_point *field, const size_t &side, const t_color &player, const 
             ++c;
         }
     }
-    // std::cout << ", after 2 diagonal  " << score << std::endl;
     return score;
 }
 
@@ -294,11 +282,8 @@ int evaluate_state(Board &state, const t_color &player, const size_t restriction
     t_point *field = state.getField();
     t_color opponent = (player == WHITE) ? BLACK : WHITE;
 
-    // std::cout << "player ";
     int player_score = eval_field(field, side, player, restrictions);
-    // std::cout << "opponent ";
     int opponent_score = eval_field(field, side, opponent, restrictions);
     int score = player_score - opponent_score;
-    // std::cout << "player=" << player << ", player score=" << player_score << ", opponent_score=" << opponent_score << ", rest[0]" << restrictions[0] << ", rest[1]" << restrictions[1] << ", rest[2]" << restrictions[2] << ", rest[3]" << restrictions[3] << std::endl;
     return score;
 }

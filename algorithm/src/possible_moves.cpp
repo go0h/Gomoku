@@ -44,8 +44,8 @@ static size_t is_free_tree(size_t line)
   return 0;
 }
 
-static size_t get_free_three_by_dir(const t_point *field, const long & side,
-                                    const long & x, const long & y, const long & x_dir, const long & y_dir, const t_color & opponent)
+static size_t get_free_three_by_dir(const t_point *field, const long &side,
+                                    const long &x, const long &y, const long &x_dir, const long &y_dir, const t_color &opponent)
 {
 
   size_t three_num = 0;
@@ -80,7 +80,7 @@ static size_t get_free_three_by_dir(const t_point *field, const long & side,
   return three_num;
 }
 
-size_t get_num_of_free_threes(t_point *field, const size_t & side, const size_t & x, const size_t & y, const t_color & player, const t_color & opponent)
+size_t get_num_of_free_threes(t_point *field, const size_t &side, const size_t &x, const size_t &y, const t_color &player, const t_color &opponent)
 {
 
   size_t three_num = 0;
@@ -112,7 +112,7 @@ size_t get_num_of_free_threes(t_point *field, const size_t & side, const size_t 
   return three_num;
 }
 
-static size_t is_capture(const t_point *field, const size_t & side, const  long &x, const long & y, const long & x_dir, const long & y_dir, const t_color & player)
+static size_t is_capture(const t_point *field, const size_t &side, const long &x, const long &y, const long &x_dir, const long &y_dir, const t_color &player)
 {
 
   size_t line = 0;
@@ -160,13 +160,13 @@ bool is_possible_capture(const t_point *field, const size_t &side, const size_t 
   return false;
 }
 
-static bool not_forbidden(t_point *field, const size_t & side, const size_t & x, const size_t & y, const t_color & player, const t_color & opponent)
+static bool not_forbidden(t_point *field, const size_t &side, const size_t &x, const size_t &y, const t_color &player, const t_color &opponent)
 {
   return get_num_of_free_threes(field, side, x, y, player, opponent) < 2 &&
          !is_possible_capture(field, side, x, y, player);
 }
 
-t_move_eval get_random_move(t_point *field, const size_t & side , const t_color & player, const t_color & opponent)
+t_move_eval get_random_move(t_point *field, const size_t &side, const t_color &player, const t_color &opponent)
 {
 
   static std::default_random_engine re{};
@@ -183,7 +183,7 @@ t_move_eval get_random_move(t_point *field, const size_t & side , const t_color 
   return {0, 0, 0, false};
 }
 
-t_move_eval *get_possible_moves(t_game_state *gs, const size_t & depth, const t_color & player, const t_color & opponent, const size_t restrictions[4])
+t_move_eval *get_possible_moves(t_game_state *gs, const size_t &depth, const t_color &player, const t_color &opponent, const size_t restrictions[4])
 {
 
   size_t side = gs->board.getSide();
@@ -202,35 +202,54 @@ t_move_eval *get_possible_moves(t_game_state *gs, const size_t & depth, const t_
 
   size_t min_y = restrictions[0] > EXPANSION_STEP ? restrictions[0] - EXPANSION_STEP : 0;
   size_t min_x = restrictions[1] > EXPANSION_STEP ? restrictions[1] - EXPANSION_STEP : 0;
-  size_t max_y = restrictions[2] < side - EXPANSION_STEP ? restrictions[2] + EXPANSION_STEP + 1 : side;
-  size_t max_x = restrictions[3] < side - EXPANSION_STEP ? restrictions[3] + EXPANSION_STEP + 1 : side;
+  size_t max_y = restrictions[2] < side - EXPANSION_STEP ? restrictions[2] + EXPANSION_STEP : side - 1;
+  size_t max_x = restrictions[3] < side - EXPANSION_STEP ? restrictions[3] + EXPANSION_STEP : side - 1;
 
-  for (size_t y = min_y; y != max_y; ++y)
+  t_point field_map[361];
+
+  for (size_t start = min_y * side + min_x; start <= max_y * side + max_x; ++start)
   {
-    for (size_t x = min_x; x != max_x; ++x)
+    field_map[start] = EMPTY;
+  }
+
+  for (size_t y = restrictions[0]; y <= restrictions[2]; ++y)
+  {
+    for (size_t x = restrictions[1]; x <= restrictions[3]; ++x)
     {
 
-      size_t pos = y * side + x;
-      if (field[pos] != EMPTY)
-        continue;
-
-      if (not_forbidden(field, side, x, y, player, opponent))
+      size_t min_y = y > EXPANSION_STEP ? y - EXPANSION_STEP : 0;
+      size_t min_x = x > EXPANSION_STEP ? x - EXPANSION_STEP : 0;
+      size_t max_y = y < side - EXPANSION_STEP ? y + EXPANSION_STEP + 1 : side;
+      size_t max_x = x < side - EXPANSION_STEP ? x + EXPANSION_STEP + 1 : side;
+      for (size_t window_y = min_y; window_y != max_y; ++window_y)
       {
-        bool is_catch = false;
-        int score = evalute_move(field, side, player, opponent, y, x, gs->captures, is_catch);
-        if (score == WIN_DETECTED)
+        for (size_t window_x = min_x; window_x != max_x; ++window_x)
         {
-          num_moves = 0;
-          pm[num_moves] = {score, x, y, is_catch};
-          ++num_moves;
-          return pm;
-
+          size_t pos = window_y * side + window_x;
+          if (field[pos] != EMPTY || field_map[pos] != EMPTY)
+          {
+            continue;
+          }
+          field_map[pos] = player;
+          if (not_forbidden(field, side, window_x, window_y, player, opponent))
+          {
+            bool is_catch = false;
+            int score = evalute_move(field, side, player, opponent, window_y, window_x, gs->captures, is_catch);
+            if (score == WIN_DETECTED)
+            {
+              num_moves = 0;
+              pm[num_moves] = {score, window_x, window_y, is_catch};
+              ++num_moves;
+              return pm;
+            }
+            pm[num_moves] = {score, window_x, window_y, is_catch};
+            ++num_moves;
+          }
         }
-        pm[num_moves] = {score, x, y, is_catch};
-        ++num_moves;
       }
     }
   }
+  
   if (!num_moves)
   {
     pm[num_moves] = get_random_move(field, side, player, opponent);
