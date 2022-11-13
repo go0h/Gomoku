@@ -369,9 +369,9 @@ class Board:
         return max_captures
 
     def create_area_of_win_strike(self, strike):
+        dirs = [(-1, -1), (0, -1), (1, -1), (-1,  0), (1,  0), (-1,  1), (0,  1), (1,  1)]
         area = set()  # unique only
         for x, y in strike:
-            dirs = [(-1, -1), (0, -1), (1, -1), (-1,  0), (1,  0), (-1,  1), (0,  1), (1,  1)]
             for x_dir, y_dir in dirs:
                 x1 = x + x_dir * 1
                 y1 = y + y_dir * 1
