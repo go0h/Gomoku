@@ -360,6 +360,10 @@ class Board:
                     for x_, y_ in captures:
                         self.board[y_][x_] = color
                     self.board[y][x] = Color.EMPTY
+
+                    # учитываются только те, которые в strike
+                    captures = list(filter(lambda p: p in strike, captures))
+
                     max_captures = max(len(captures), max_captures)
                 self.board[y][x] = Color.EMPTY
         return max_captures
