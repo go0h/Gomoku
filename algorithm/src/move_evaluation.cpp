@@ -34,13 +34,13 @@ void setDirections(const t_point *field, const size_t &side, const size_t &y, co
         directionsIndex[i] = 0;
     }
 
-    for (int i = -4; i < 5; i++)
+    for (int i = -4; i < 5; ++i)
     {
         if (static_cast<int>(y) + i >= 0 && static_cast<int>(y) + i < static_cast<int>(side))
         {
             directions[0][directionsIndex[0]] = field[(y + i) * side + x];
             ++directionsIndex[0];
-            if (static_cast<int>(y) + i >= 0 && static_cast<int>(x) + i < static_cast<int>(side))
+            if (static_cast<int>(x) + i >= 0 && static_cast<int>(x) + i < static_cast<int>(side))
             {
                 directions[1][directionsIndex[1]] = field[(y + i) * side + x + i];
                 ++directionsIndex[1];
