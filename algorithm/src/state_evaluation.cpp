@@ -1,12 +1,12 @@
 #define LiveOne 10
-#define DeadOne 1;
-#define LiveTwo 100;
-#define DeadTwo 50;
-#define LiveThree 1000;
-#define DeadThree 500;
-#define LiveFour 10000;
-#define DeadFour 5000;
-#define Five 100000;
+#define DeadOne 1
+#define LiveTwo 100
+#define DeadTwo -1000
+#define LiveThree 1000
+#define DeadThree 500
+#define LiveFour 10000
+#define DeadFour 5000
+#define Five 100000
 
 #include "Gomoku.hpp"
 

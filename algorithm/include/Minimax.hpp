@@ -4,7 +4,7 @@
 #include "ThreadPool.hpp"
 #include "utils.hpp"
 
-extern ssize_t DIRECTIONS[8][2];
+extern int DIRECTIONS[8][2];
 
 class Minimax
 {

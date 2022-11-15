@@ -80,7 +80,7 @@ int negamax_thread(t_game_state *gs, const size_t &depth, const t_color &player,
 {
   if (moveScore == WIN_DETECTED)
   {
-    return -(100000 + static_cast<int>(depth));
+    return -(WIN_STATE_SCORE + static_cast<int>(depth));
   }
   int bestScore = MINUS_INF;
 
@@ -129,29 +129,34 @@ int negamax_thread(t_game_state *gs, const size_t &depth, const t_color &player,
   return bestScore;
 }
 
-void set_move_and_catch(t_game_state *gs, const size_t &depth, const size_t &x, const size_t &y, const t_color &player, const t_color &opponent, const bool &is_catch)
+void set_move_and_catch(t_game_state *gs, const size_t &depth, const size_t &x_long, const size_t &y_long, const t_color &player, const t_color &opponent, const bool &is_catch)
 {
 
-  gs->board(x, y) = player;
+  gs->board(x_long, y_long) = player;
   if (!is_catch)
   {
     return;
   }
   t_point *field = gs->board.getField();
-  size_t side = gs->board.getSide();
+  size_t side_long = gs->board.getSide();
   size_t *captures = gs->depth_state[depth].captures;
   size_t &num_captures = gs->depth_state[depth].num_captures;
 
-  for (size_t i = 0; i != 8; ++i)
+    int side = static_cast<int>(side_long);
+    int y = static_cast<int>(y_long);
+    int x = static_cast<int>(x_long);
+
+
+  for (int i = 0; i != 8; ++i)
   {
 
-    size_t x_dir = DIRECTIONS[i][0];
-    size_t y_dir = DIRECTIONS[i][1];
+    int x_dir = DIRECTIONS[i][0];
+    int y_dir = DIRECTIONS[i][1];
 
-    size_t x3 = x + x_dir * 3;
-    size_t y3 = y + y_dir * 3;
+    int x3 = x + x_dir * 3;
+    int y3 = y + y_dir * 3;
 
-    if (x3 < side && y3 < side && field[y3 * side + x3] == player)
+    if (x3 >= 0 && x3 < side && y3 >= 0 && y3 < side && field[y3 * side + x3] == player)
     {
       size_t p2 = (y + y_dir * 2) * side + (x + x_dir * 2);
       size_t p1 = (y + y_dir * 1) * side + (x + x_dir * 1);

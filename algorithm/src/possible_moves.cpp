@@ -14,7 +14,7 @@
 
 using Dist = std::uniform_int_distribution<size_t>;
 
-long DIRECTIONS[8][2] = {
+int DIRECTIONS[8][2] = {
     {-1, -1},
     {0, -1},
     {1, -1},

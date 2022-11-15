@@ -19,10 +19,10 @@ void setRestrictions(const t_point *field, const size_t &side, size_t restrictio
             }
         }
     }
-        restrictions[0] = min_y;
-        restrictions[1] = min_x;
-        restrictions[2] = max_y;
-        restrictions[3] = max_x;
+    restrictions[0] = min_y;
+    restrictions[1] = min_x;
+    restrictions[2] = max_y;
+    restrictions[3] = max_x;
     return;
 }
 
@@ -95,7 +95,7 @@ int eval_sequence(int seq)
     case 20:
         return 45000;
     case 100:
-        return 800000;
+        return WIN_MOVE_SCORE;
     case 0:
         return 7;
     case 1:
@@ -105,7 +105,7 @@ int eval_sequence(int seq)
     case 3:
         return 15000;
     case 4:
-        return 800000;
+        return WIN_MOVE_SCORE;
     case -1:
         return 15;
     case -2:
@@ -120,7 +120,7 @@ int eval_sequence(int seq)
     return 0;
 }
 
-int evaluate_direction(const t_point direction[9], const t_color & player, const t_color & opponent)
+int evaluate_direction(const t_point direction[9], const t_color &player, const t_color &opponent)
 {
     int score = 0;
 
@@ -150,7 +150,7 @@ int evaluate_direction(const t_point direction[9], const t_color & player, const
             }
         }
         score += eval_sequence(get_sequence_score(player_count, opponent_count));
-        if ((score >= 800000))
+        if ((score >= WIN_MOVE_SCORE))
         {
             return WIN_DETECTED;
         }
@@ -158,24 +158,27 @@ int evaluate_direction(const t_point direction[9], const t_color & player, const
     return score;
 }
 
-int evaluate_captures(t_point *field, const size_t &side, const t_color &player, const t_color &opponent, size_t &y, size_t &x, int capture)
+int evaluate_captures(t_point *field, const size_t &side_long, const t_color &player, const t_color &opponent, size_t &y_long, size_t &x_long, int capture)
 {
     int score = 0;
     int player_count = 0;
+    int side = static_cast<int>(side_long);
+    int y = static_cast<int>(y_long);
+    int x = static_cast<int>(x_long);
 
-    for (size_t i = 0; i != 8; ++i)
+    for (int i = 0; i != 8; ++i)
     {
 
-        size_t x_dir = DIRECTIONS[i][0];
-        size_t y_dir = DIRECTIONS[i][1];
+        int x_dir = DIRECTIONS[i][0];
+        int y_dir = DIRECTIONS[i][1];
 
-        size_t x3 = x + x_dir * 3;
-        size_t y3 = y + y_dir * 3;
+        int x3 = x + x_dir * 3;
+        int y3 = y + y_dir * 3;
 
-        if (x3 < side && y3 < side && field[y3 * side + x3] == player)
+        if (x3 >= 0 && x3 < side && y3 >= 0 && y3 < side && field[y3 * side + x3] == player)
         {
-            size_t p2 = (y + y_dir * 2) * side + (x + x_dir * 2);
-            size_t p1 = (y + y_dir * 1) * side + (x + x_dir * 1);
+            int p2 = (y + y_dir * 2) * side + (x + x_dir * 2);
+            int p1 = (y + y_dir * 1) * side + (x + x_dir * 1);
 
             if (field[p1] == opponent && field[p2] == opponent)
             {
@@ -189,7 +192,7 @@ int evaluate_captures(t_point *field, const size_t &side, const t_color &player,
                     player_count = 20; // catch double
                 }
                 score += eval_sequence(get_sequence_score(player_count, 0));
-                if ((score >= 800000))
+                if ((score >= WIN_MOVE_SCORE))
                 {
                     return WIN_DETECTED;
                 }
@@ -199,7 +202,43 @@ int evaluate_captures(t_point *field, const size_t &side, const t_color &player,
     return score;
 }
 
-double evalute_move(t_point *field, const size_t &side, const t_color &player, const t_color &opponent , size_t &y, size_t &x, const int capture[3], bool & is_catch)
+int evaluate_loss_captures(t_point *field, const size_t &side_long, const t_color &player, const t_color &opponent, size_t &y_long, size_t &x_long)
+{
+    int score = 0;
+    int side = static_cast<int>(side_long);
+    int y = static_cast<int>(y_long);
+    int x = static_cast<int>(x_long);
+
+    for (int i = 0; i != 8; ++i)
+    {
+
+        int x_dir_left = DIRECTIONS[i][0];
+        int y_dir_left = DIRECTIONS[i][1];
+
+        int x_dir_right = -DIRECTIONS[i][0];
+        int y_dir_right = -DIRECTIONS[i][1];
+
+        int x0 = x + x_dir_left;
+        int y0 = y + y_dir_left;
+
+        int x3 = x + x_dir_right * 2;
+        int y3 = y + y_dir_right * 2;
+
+        if (x0 >= 0 && x0 < side && x3 >= 0 && x3 < side &&
+            y0 >= 0 && y0 < side && y3 >= 0 && y3 < side)
+        {
+            int p2 = (y + y_dir_right) * side + (x + x_dir_right);
+
+            if ((field[y0 * side + x0] == opponent && field[p2] == player && field[y3 * side + x3] == EMPTY) || (field[y0 * side + x0] == EMPTY && field[p2] == player && field[y3 * side + x3] == opponent))
+            {
+                score += 45000;
+            }
+        }
+    }
+    return score;
+}
+
+double evalute_move(t_point *field, const size_t &side, const t_color &player, const t_color &opponent, size_t &y, size_t &x, const int capture[3], bool &is_catch)
 {
     int score = 0;
     int scoreTmp = 0;
@@ -207,21 +246,30 @@ double evalute_move(t_point *field, const size_t &side, const t_color &player, c
     setDirections(field, side, y, x, directions);
 
     scoreTmp = evaluate_captures(field, side, player, opponent, y, x, capture[player]);
-    if (scoreTmp){
+    if (scoreTmp)
+    {
         is_catch = true;
         if (scoreTmp == WIN_DETECTED)
         {
             return WIN_DETECTED;
-        } 
+        }
         score += scoreTmp;
     }
-    
+
+    int scoreLoss = evaluate_loss_captures(field, side, player, opponent, y, x);
     for (int i = 0; i < 4; ++i)
     {
         scoreTmp = evaluate_direction(directions[i], player, opponent);
         if (scoreTmp == WIN_DETECTED)
         {
-            return WIN_DETECTED;
+            if (scoreLoss)
+            {
+                return WIN_MOVE_SCORE - scoreLoss;
+            }
+            else
+            {
+                return WIN_DETECTED;
+            }
         }
         score += scoreTmp;
     }
