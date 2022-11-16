@@ -171,7 +171,8 @@ class BoardGui:
         self._winner_name = ttk.Label(self._info_frame, text=self._turn.get(),
                         font=[FONT, LABEL_FONT_SIZE, "underline", "bold"],
                         fg=WINNER_COLOR,
-                        bg=BOARD_COLOR)
+                        bg=BOARD_COLOR,
+                        borderwidth=35)
         self._winner_name.place(relx=.7, rely=.47, anchor="center")
 
         self.delete_hints()

@@ -249,7 +249,7 @@ t_move_eval *get_possible_moves(t_game_state *gs, const size_t &depth, const t_c
       }
     }
   }
-  
+
   if (!num_moves)
   {
     pm[num_moves] = get_random_move(field, side, player, opponent);
