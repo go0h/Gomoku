@@ -274,5 +274,5 @@ double evalute_move(t_point *field, const size_t &side, const t_color &player, c
         score += scoreTmp;
     }
 
-    return score;
+    return score - scoreLoss;
 }
