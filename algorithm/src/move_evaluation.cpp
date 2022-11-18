@@ -26,7 +26,7 @@ void setRestrictions(const t_point *field, const size_t &side, size_t restrictio
     return;
 }
 
-void setDirections(const t_point *field, const size_t &side, const size_t &y, const size_t &x, t_point directions[4][9])
+void setDirections(const t_point *field, const size_t &side, const size_t &y, const size_t &x, t_point directions[4][9], int move_position[4])
 {
     int directionsIndex[4];
     for (int i = 0; i != 4; ++i)
@@ -39,20 +39,36 @@ void setDirections(const t_point *field, const size_t &side, const size_t &y, co
         if (static_cast<int>(y) + i >= 0 && static_cast<int>(y) + i < static_cast<int>(side))
         {
             directions[0][directionsIndex[0]] = field[(y + i) * side + x];
+            if (i == 0)
+            {
+                move_position[0] = directionsIndex[0];
+            }
             ++directionsIndex[0];
             if (static_cast<int>(x) + i >= 0 && static_cast<int>(x) + i < static_cast<int>(side))
             {
                 directions[1][directionsIndex[1]] = field[(y + i) * side + x + i];
+                if (i == 0)
+                {
+                    move_position[1] = directionsIndex[1];
+                }
                 ++directionsIndex[1];
             }
         }
         if (static_cast<int>(x) + i >= 0 && static_cast<int>(x) + i < static_cast<int>(side))
         {
             directions[2][directionsIndex[2]] = field[y * side + x + i];
+            if (i == 0)
+            {
+                move_position[2] = directionsIndex[2];
+            }
             ++directionsIndex[2];
             if (static_cast<int>(y) - i >= 0 && static_cast<int>(y) - i < static_cast<int>(side))
             {
                 directions[3][directionsIndex[3]] = field[(y - i) * side + x + i];
+                if (i == 0)
+                {
+                    move_position[3] = directionsIndex[3];
+                }
                 ++directionsIndex[3];
             }
         }
@@ -93,7 +109,7 @@ int eval_sequence(int seq)
     switch (seq)
     {
     case 20:
-        return 45000;
+        return 30000;
     case 100:
         return WIN_MOVE_SCORE;
     case 0:
@@ -103,7 +119,7 @@ int eval_sequence(int seq)
     case 2:
         return 800;
     case 3:
-        return 15000;
+        return WIN_MOVE_SCORE;
     case 4:
         return WIN_MOVE_SCORE;
     case -1:
@@ -111,9 +127,9 @@ int eval_sequence(int seq)
     case -2:
         return 400;
     case -3:
-        return 30000;
+        return 4000;
     case -4:
-        return 100000;
+        return 30000;
     case 10:
         return 0;
     }
@@ -154,6 +170,60 @@ int evaluate_direction(const t_point direction[9], const t_color &player, const 
         {
             return WIN_DETECTED;
         }
+    }
+    return score;
+}
+
+int evaluate_defence(const t_point direction[9], const int move_position, const t_color &player, const t_color &opponent)
+{
+    int score = 0;
+    int left_opponent_count = 0;
+    int rigth_opponent_count = 0;
+    int left_block = 0;
+    int rigth_block = 0;
+    for (int i = move_position - 1; i >= 0; --i)
+    {
+        if (direction[i] == opponent)
+        {
+            ++left_opponent_count;
+        }
+        else
+        {
+            if (direction[i] == player || move_position != 4)
+            {
+                ++left_block;
+            }
+            break;
+        }
+    }
+
+    for (int i = move_position + 1; i < DIRECTION_SIZE; ++i)
+    {
+        if (direction[i] == opponent)
+        {
+            ++rigth_opponent_count;
+        }
+        else
+        {
+            if (direction[i] == player || direction[i] == DIRECTION_STOP)
+            {
+                ++rigth_block;
+            }
+            break;
+        }
+    }
+
+    if (left_opponent_count == 4 || rigth_opponent_count == 4)
+    {
+        return WIN_DETECTED;
+    }
+    if ((left_opponent_count == 3 && !left_block) || (rigth_opponent_count == 3 && !rigth_block))
+    {
+        return WIN_DETECTED;
+    }
+    if (left_opponent_count && rigth_opponent_count &&  left_opponent_count + rigth_opponent_count > 2 && left_block != 0 && rigth_block != 0)
+    {
+        return WIN_DETECTED;
     }
     return score;
 }
@@ -231,7 +301,7 @@ int evaluate_loss_captures(t_point *field, const size_t &side_long, const t_colo
 
             if ((field[y0 * side + x0] == opponent && field[p2] == player && field[y3 * side + x3] == EMPTY) || (field[y0 * side + x0] == EMPTY && field[p2] == player && field[y3 * side + x3] == opponent))
             {
-                score += 45000;
+                score += 30000;
             }
         }
     }
@@ -243,7 +313,8 @@ double evalute_move(t_point *field, const size_t &side, const t_color &player, c
     int score = 0;
     int scoreTmp = 0;
     t_point directions[4][9];
-    setDirections(field, side, y, x, directions);
+    int move_position[4];
+    setDirections(field, side, y, x, directions, move_position);
 
     scoreTmp = evaluate_captures(field, side, player, opponent, y, x, capture[player]);
     if (scoreTmp)
@@ -270,6 +341,16 @@ double evalute_move(t_point *field, const size_t &side, const t_color &player, c
             {
                 return WIN_DETECTED;
             }
+        }
+        score += scoreTmp;
+    }
+
+    for (int i = 0; i < 4; ++i)
+    {
+        scoreTmp = evaluate_defence(directions[i], move_position[i], player, opponent);
+        if (scoreTmp == WIN_DETECTED)
+        {
+            return WIN_DETECTED;
         }
         score += scoreTmp;
     }

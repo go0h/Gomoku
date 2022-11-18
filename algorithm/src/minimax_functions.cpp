@@ -11,9 +11,9 @@ static double get_catch_score(int n)
   case 0:
     return 0;
   case 2:
-    return 1000;
+    return 10000;
   case 4:
-    return 5000;
+    return 10000;
   case 6:
     return 10000;
   case 8:
@@ -21,11 +21,6 @@ static double get_catch_score(int n)
   default:
     return 180000;
   }
-}
-
-std::string coord_to_pos_debug2(size_t x, size_t y, size_t side)
-{
-  return std::string(1, char(97 + x)) + std::to_string(side - y);
 }
 
 void changeRestrictions(const size_t &x, const size_t &y, const size_t oldRestrictions[4], size_t newRestrictions[4])
@@ -78,16 +73,11 @@ void minimax_thread_f(void *gs_ptr, int player, size_t depth, size_t restriction
 int negamax_thread(t_game_state *gs, const size_t &depth, const t_color &player, const t_color &opponent,
                       int alpha, const int beta, const int &moveScore, const size_t restrictions[4])
 {
-  if (moveScore == WIN_DETECTED)
+  if (moveScore == WIN_DETECTED || !depth )
   {
-    return -(WIN_STATE_SCORE + static_cast<int>(depth));
+    return -(evaluate_state(gs->board, opponent, restrictions) + static_cast<int>(depth));
   }
   int bestScore = MINUS_INF;
-
-  if (!depth)
-  {
-    return -evaluate_state(gs->board, opponent, restrictions);
-  }
 
   t_move_eval *possible_moves = get_possible_moves(gs, depth, player, opponent, restrictions);
   size_t num_moves = gs->depth_state[depth].num_moves;

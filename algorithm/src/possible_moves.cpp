@@ -112,17 +112,17 @@ size_t get_num_of_free_threes(t_point *field, const size_t &side, const size_t &
   return three_num;
 }
 
-static size_t is_capture(const t_point *field, const size_t &side, const long &x, const long &y, const long &x_dir, const long &y_dir, const t_color &player)
+static size_t is_capture(const t_point *field, const long &side, const long &x, const long &y, const long &x_dir, const long &y_dir, const t_color &player)
 {
 
-  size_t line = 0;
+  long line = 0;
 
-  for (size_t i = 0; i != 4; ++i)
+  for (long i = 0; i != 4; ++i)
   {
-    size_t x_ = x + i * x_dir;
-    size_t y_ = y + i * y_dir;
+    long x_ = x + i * x_dir;
+    long y_ = y + i * y_dir;
 
-    if (x_ < side && y_ < side)
+    if (x_ > -1 && x_ < side && y_> -1 && y_ < side)
     {
       long pos = y_ * side + x_;
 
@@ -189,10 +189,13 @@ t_move_eval *get_possible_moves(t_game_state *gs, const size_t &depth, const t_c
   size_t side = gs->board.getSide();
   t_point *field = gs->board.getField();
   t_move_eval *pm = gs->depth_state[depth].poss_moves;
+  t_move_eval pm_win[MAX_MOVES];
+  size_t num_moves_win = 0;
   size_t &num_moves = gs->depth_state[depth].num_moves;
   num_moves = 0;
 
   // in start game first move
+  
   if (restrictions[0] == side)
   {
     pm[num_moves] = get_random_move(field, side, player, opponent);
@@ -216,11 +219,16 @@ t_move_eval *get_possible_moves(t_game_state *gs, const size_t &depth, const t_c
   {
     for (size_t x = restrictions[1]; x <= restrictions[3]; ++x)
     {
+          if (field[y * side + x] == EMPTY)
+          {
+            continue;
+          }
 
-      size_t min_y = y > EXPANSION_STEP ? y - EXPANSION_STEP : 0;
-      size_t min_x = x > EXPANSION_STEP ? x - EXPANSION_STEP : 0;
-      size_t max_y = y < side - EXPANSION_STEP ? y + EXPANSION_STEP + 1 : side;
-      size_t max_x = x < side - EXPANSION_STEP ? x + EXPANSION_STEP + 1 : side;
+      min_y = y > EXPANSION_STEP ? y - EXPANSION_STEP : 0;
+      min_x = x > EXPANSION_STEP ? x - EXPANSION_STEP : 0;
+      max_y = y < side - EXPANSION_STEP ? y + EXPANSION_STEP + 1 : side;
+      max_x = x < side - EXPANSION_STEP ? x + EXPANSION_STEP + 1 : side;
+      
       for (size_t window_y = min_y; window_y != max_y; ++window_y)
       {
         for (size_t window_x = min_x; window_x != max_x; ++window_x)
@@ -235,12 +243,10 @@ t_move_eval *get_possible_moves(t_game_state *gs, const size_t &depth, const t_c
           {
             bool is_catch = false;
             int score = evalute_move(field, side, player, opponent, window_y, window_x, gs->captures, is_catch);
-            if (score == WIN_DETECTED)
+            if (score == WIN_DETECTED && num_moves_win < MAX_MOVES)
             {
-              num_moves = 0;
-              pm[num_moves] = {score, window_x, window_y, is_catch};
-              ++num_moves;
-              return pm;
+              pm_win[num_moves_win] = {score, window_x, window_y, is_catch};
+              ++num_moves_win;
             }
             pm[num_moves] = {score, window_x, window_y, is_catch};
             ++num_moves;
@@ -249,6 +255,14 @@ t_move_eval *get_possible_moves(t_game_state *gs, const size_t &depth, const t_c
       }
     }
   }
+  
+  if (num_moves_win){
+    num_moves = num_moves_win;
+    for (size_t i = 0; i < num_moves_win; ++i){
+      pm[i] = pm_win[i];
+    }
+    return pm;
+  }
 
   if (!num_moves)
   {
@@ -256,6 +270,6 @@ t_move_eval *get_possible_moves(t_game_state *gs, const size_t &depth, const t_c
     num_moves++;
   }
   qsort(pm, num_moves, sizeof(t_move_eval), &compare_moves_desc);
-  num_moves = num_moves > MAX_MOVES ? MAX_MOVES : num_moves;
+  num_moves = num_moves > MAX_MOVES + (depth >> 2 ) ? MAX_MOVES + (depth >> 2) : num_moves;
   return pm;
 }

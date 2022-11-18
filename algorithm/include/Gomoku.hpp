@@ -15,8 +15,9 @@
 # define DIRECTION_STOP 3
 # define WIN_DETECTED -1
 # define WIN_MOVE_SCORE 800000
-# define WIN_STATE_SCORE 100000
+# define WIN_STATE_SCORE 800000
 # define MAX_MOVES 7
+# define MAX_MOVES_HINTS 5
 # define EXPANSION_STEP 2
 # define MAX_DEPTH 9
 # define MAX_SIDE 19
@@ -61,7 +62,7 @@ private:
   /*
    *  minimax utils
    */
-  std::vector<std::string> _set_move_and_get_captures(Board& state, size_t x, size_t y, t_color player);
+  std::vector<std::string> _set_move_and_get_captures(Board& state, long x, long y, t_color player);
   MakeTurn*                _create_turn(std::vector<t_move_eval>& moves);
 
   /*
